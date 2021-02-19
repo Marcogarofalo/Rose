@@ -142,26 +142,25 @@ many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel){
   #gg <- gg+ scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
   #            labels = trans_format("log10", math_format(10^.x)))
 
-  gg <- g + ggplot2::geom_point(data=mydf,mapping=aes(x=x, y=y,color=mylabel),inherit.aes = FALSE)
+  mylabel<-mylabel
+  gg <- g + ggplot2::geom_point(data=mydf,mapping=aes(x=x, y=y,colour=mylabel),inherit.aes = FALSE)
 
   gg <- gg +ggplot2::geom_errorbar(data=mydf, mapping=aes(x=x, ymin=y-err, ymax=y+err,color=mylabel),
                                    width = 0.3,inherit.aes = FALSE)
-  #
 
-  gg <- gg +ggplot2::geom_ribbon( data=mydf, mapping=aes(x=xfit, ymin=fit-errfit,ymax=fit+errfit
-                                                         ,color=mylabel,fill=mylabel)
-                                  #, color="darkgreen"
-                                  ,alpha=0.3
-                                  #,fill="darkgreen"
-                                  ,inherit.aes = FALSE)
+
+  gg <- gg +ggplot2::geom_ribbon( data=mydf,
+                mapping=aes(x=xfit, ymin=fit-errfit,ymax=fit+errfit ,color=mylabel,fill=mylabel)
+                                  ,alpha=0.3      ,inherit.aes = FALSE)
+  fit_range<-fit_range
   gg <- gg+ ggplot2::geom_line(data=mydf, aes(x=fit_range[1],y=y,  color=mylabel), linetype="dashed")
   gg <- gg+ ggplot2::geom_line( data=mydf ,aes(x=fit_range[2],y=y, color=mylabel), linetype="dashed")
-  #gg  <- gg + xlim(set_xmargin(fit_range,128/2) ) + ylim(-2e+4, 1e+4)
 
+  #gg  <- gg + xlim(set_xmargin(fit_range,128/2) ) + ylim(-2e+4, 1e+4)
   #gg<- gg +geom_text(data=mydf, aes(x=x,y=y), label=mylabel)
   #gg <- gg+ labs(x = TeX('x_0/a'), y= TeX('$c(x_0/a)$'))
-  #
-  #
+
+
   gg <- gg+ggplot2::theme_bw()
   # len<-length(fit_par[1,])  /2-1
   # for(i in c(1:len )  ){
