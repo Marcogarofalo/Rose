@@ -116,8 +116,9 @@ my_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no"){
 #' @import ggplot2
 many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel){
 
-  l<- length(d[1,])
-  fit_precision<- 2 #(l -2)/3  # the number of x of the fits
+  l<- length( which( d[1,]!="NA" ) )
+  fit_precision<-   (l -2)/3  # the number of x of the fits
+
   mydf <-data.frame('x'=c(0), 'y'=c(0), 'err'=c(0)
                     ,'xfit'=c(0), 'fit'=c(0), 'errfit'=c(0) )
   mydf<- mydf[-1,]
@@ -141,7 +142,7 @@ many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel){
   }
   #gg <- gg+ scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
   #            labels = trans_format("log10", math_format(10^.x)))
-
+#browser()
   mylabel<-mylabel
   gg <- g + ggplot2::geom_point(data=mydf,mapping=aes(x=x, y=y,colour=mylabel),inherit.aes = FALSE)
 
@@ -151,9 +152,9 @@ many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel){
 
   gg <- gg +ggplot2::geom_ribbon( data=mydf,
                 mapping=aes(x=xfit, ymin=fit-errfit,ymax=fit+errfit ,color=mylabel,fill=mylabel)
-                                  ,alpha=0.3      ,inherit.aes = FALSE)
+                                  ,alpha=0.3      ,inherit.aes = FALSE, show.legend = FALSE)
   fit_range<-fit_range
-  gg <- gg+ ggplot2::geom_line(data=mydf, aes(x=fit_range[1],y=y,  color=mylabel), linetype="dashed")
+  gg <- gg+ ggplot2::geom_line(data=mydf, aes(x=fit_range[1],y=y,  color=mylabel), linetype="dashed",)
   gg <- gg+ ggplot2::geom_line( data=mydf ,aes(x=fit_range[2],y=y, color=mylabel), linetype="dashed")
 
   #gg  <- gg + xlim(set_xmargin(fit_range,128/2) ) + ylim(-2e+4, 1e+4)
