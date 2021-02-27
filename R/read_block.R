@@ -92,3 +92,29 @@ get_plateaux_range<-function(df,n){
 
   return(fit_range)
 }
+
+
+#' get all the correlator name in a file
+#'
+#' This function allows you read a file in gnuplot style,
+#'  Each block is a chunk of data separated by an empty line
+#' @param df data frame constructed with read_df
+#' @return  a data frame with columns "n" an integer integer,"corr" the name of
+#' the correlator
+#' @details  Important it allows only for 20 columns
+
+get_all_corr<-function(df){
+
+  Nobs<-df[length(df[,1]),1]/2
+
+
+  corr<- data.frame("n"=c(0),"corr"=c(0))
+
+  for (n in c(1:Nobs)){
+    l<-grep("fit",df[,3])
+    a1<-gsub("#","", df[l,2][n])
+    corr[n,]<- list(n, a1)
+
+  }
+  return(corr)
+}
