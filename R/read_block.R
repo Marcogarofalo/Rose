@@ -100,7 +100,7 @@ get_plateaux_range<-function(df,n){
 #'  Each block is a chunk of data separated by an empty line
 #' @param df data frame constructed with read_df
 #' @return  a data frame with columns "n" an integer integer,"corr" the name of
-#' the correlator
+#' the correlator, "fit_Range"   , "chi2/dof" chi2 value,
 #' @details  Important it allows only for 20 columns
 
 get_all_corr<-function(df){
@@ -108,12 +108,14 @@ get_all_corr<-function(df){
   Nobs<-df[length(df[,1]),1]/2
 
 
-  corr<- data.frame("n"=c(0),"corr"=c(0))
+  corr<- data.frame("n"=c(0),"corr"=c(0),"fit_range"=c(0) ,"chi2.dof"=c(0))
 
   for (n in c(1:Nobs)){
     l<-grep("fit",df[,3])
     a1<-gsub("#","", df[l,2][n])
-    corr[n,]<- list(n, a1)
+    fit_range<- df[l,5][n]
+    chi2<-gsub("chi2=","", df[l,6][n])
+    corr[n,]<- list(n, a1,fit_range,chi2)
 
   }
   return(corr)
