@@ -151,7 +151,7 @@ many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel){
 
 
   gg <- gg +ggplot2::geom_ribbon( data=mydf,
-                mapping=aes(x=xfit, ymin=fit-errfit,ymax=fit+errfit ,color=mylabel,fill=mylabel)
+                mapping=aes(x=xfit, ymin=fit-errfit,ymax=fit+errfit ,fill=mylabel),color=NA
                                   ,alpha=0.3      ,inherit.aes = FALSE, show.legend = FALSE)
   fit_range<-fit_range
   gg <- gg+ ggplot2::geom_line(data=mydf, aes(x=fit_range[1],y=y,  color=mylabel), linetype="dashed",)
