@@ -107,14 +107,18 @@ my_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no"){
 
   return(gg)
 }
+
+
 #####################################################################
 #####################################################################
-#' plot a fit to some data appending to the existing ggplot
-#' @param g a ggplot object created with ggplot()
-#' @param d data frame
-#' @param  T total time extend of the plot (T/2)
-#' @import ggplot2
-many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel){
+#' from a data frame of the form
+#' t   data err fit err  t+h fit  err t+2h fit err
+#' return a data frame of the form
+#'  t   data err fit err
+#'  t+h   data err fit err
+#'  t+2h   data err fit err
+#'  @param d data frame
+reshape_df_analysis_to_ggplot<-function(d){
 
   l<- length( which( d[1,]!="NA" ) )
   fit_precision<-   (l -2)/3  # the number of x of the fits
@@ -135,14 +139,53 @@ many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel){
       count<-count+1
     }
   }
+
+  return(mydf)
+}
+
+#####################################################################
+#####################################################################
+#' plot a fit to some data appending to the existing ggplot
+#' @param g a ggplot object created with ggplot()
+#' @param d data frame
+#' @param  T total time extend of the plot (T/2)
+#' @import ggplot2
+many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel){
+#
+#   l<- length( which( d[1,]!="NA" ) )
+#   fit_precision<-   (l -2)/3  # the number of x of the fits
+#
+#   mydf <-data.frame('x'=c(0), 'y'=c(0), 'err'=c(0)
+#                     ,'xfit'=c(0), 'fit'=c(0), 'errfit'=c(0) )
+#   mydf<- mydf[-1,]
+#   #
+#   colx <- c(1,c(1:fit_precision*3))[-2] # 1, 6, 9, 12,..#columns of the x
+#   colf <- c(4,c(1:fit_precision*3+1))[-2]# 4, 7, 10, 13,..#columns of the fit
+#   colferr <- c(5,c(1:fit_precision*3+2))[-2]# 5, 8, 11, 14,..#columns of the fit
+#   count<-1
+#   for(i in c(1:fit_precision)) {
+#     for (t in c(1: length(d[,1])) ){
+#       mylist  <-  list(d[t,1],d[t,2], d[t,3]  )
+#       mylist  <- append(mylist, list( d[t,colx[i]],d[t,colf[i]], d[t,colferr[i]]  ) )
+#       mydf[count,]<- mylist
+#       count<-count+1
+#     }
+#   }
+  mydf<-reshape_df_analysis_to_ggplot(d)
   if (logscale=="yes"){
     mydf[,3]<- mydf[,3]/mydf[,2]
     mydf[,6]<- mydf[,6]/mydf[,5]
-    mydf<-dplyr::mutate_at(mydf,c(2,5) ,function(x) log10(x))
+    # for (i in c(1:length(mydf[,1]))){
+    #    if (mydf[i,2]>0)  mydf[i,2]=log10(mydf[i,2])
+    #    else              mydf[i,2]=-20
+    #    if (mydf[i,5]>0)  mydf[i,5]=log10(mydf[i,5])
+    #    else              mydf[i,5]=-20
+    # }
+
+    mydf<-dplyr::mutate_at(mydf,c(2,5) ,function(x) log10(x) )
   }
   #gg <- gg+ scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
   #            labels = trans_format("log10", math_format(10^.x)))
-#browser()
   mylabel<-mylabel
   gg <- g + ggplot2::geom_point(data=mydf,mapping=aes(x=x, y=y,colour=mylabel),inherit.aes = FALSE)
 
@@ -177,6 +220,41 @@ many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel){
   return(gg)
 }
 
+#####################################################################
+#####################################################################
+#' plot data minus fit appending to the existing ggplot
+#' @param g a ggplot object created with ggplot()
+#' @param d data frame
+#' @param  T total time extend of the plot (T/2)
+#' @import ggplot2
+residual_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel){
+  mydf<-reshape_df_analysis_to_ggplot(d)
+
+  if (logscale=="yes"){
+    mydf[,3]<- mydf[,3]/mydf[,2]
+    mydf[,6]<- mydf[,6]/mydf[,5]
+    mydf<-dplyr::mutate_at(mydf,c(2,5) ,function(x) log10(x))
+  }
+  mylabel<-mylabel
+  gg <- g + ggplot2::geom_point(data=d,mapping=aes(x=d[,1], y=d[,2]-d[,4],colour=mylabel),inherit.aes = FALSE)
+
+  gg <- gg +ggplot2::geom_errorbar(data=d, mapping=aes(x=d[,1], ymin=d[,2]-d[,3]-d[,4], ymax=d[,2]+d[,3]-d[,4],color=mylabel),
+                                   width = 0.3,inherit.aes = FALSE)
+
+
+  gg <- gg +ggplot2::geom_ribbon( data=mydf,
+                                  mapping=aes(x=xfit, ymin=-errfit,ymax=+errfit ,fill=mylabel),color=NA
+                                  ,alpha=0.2      ,inherit.aes = FALSE, show.legend = FALSE)
+  fit_range<-fit_range
+
+  gg <- gg+ ggplot2::geom_line(data=d, aes(x=fit_range[1],y=d[,2]-d[,4]+d[,3],  color=mylabel),alpha=0.3, linetype="dashed",)
+  gg <- gg+ ggplot2::geom_line( data=d ,aes(x=fit_range[2],y=d[,2]-d[,4]+d[,3], color=mylabel),alpha=0.3, linetype="dashed")
+
+
+  gg <- gg+ggplot2::theme_bw()
+
+  return(gg)
+}
 
 #' plot a fit to some data appending to the existing ggplot
 #' @param fit_par the output of read_fit()
@@ -192,3 +270,89 @@ print_fit<- function(fit_par){
   }
 
 }
+
+#####################################################################
+#####################################################################
+#' plot a fit to some data appending to the existing ggplot
+#' @param g a ggplot object created with ggplot()
+#' @param d data frame
+#' @param  Th total time extend of the plot (T/2)
+#' @param logscale can be "yes", everithig else means no
+#' @param extrax  extra time space to give to the plot after the plateau range default c(2,4)
+#' @param extrax extra yrange in unit of the yerror , default c(5,5)
+#' @import ggplot2
+scale_fit_ggplot<-function(d, fit_range,Th, logscale="no", g,extrax=c(2,4), extray=c(5,5) ){
+
+  rowmin=d[fit_range[1],1]
+  rowmax=d[fit_range[2],1]
+  ymin=(min(d[rowmin,2]-extray[1]*d[rowmin,3]  ,d[rowmax,2]-extray[1]*d[rowmax,3]))
+  ymax=(max(d[rowmin,2]+extray[2]*d[rowmin,3]  ,d[rowmax,2]+extray[2]*d[rowmax,3]))
+
+  if (logscale=="yes"){
+    ymin=log10(ymin)
+    ymax=log10(ymax)
+  }
+
+  xmin=fit_range[1]-extrax[1]
+  if (xmin <0)
+    xmin=0
+  xmax=fit_range[2]+extrax[2]
+  if (xmax >Th)
+    xmax=Th
+
+
+  gg<- g+ggplot2::coord_cartesian(xlim=c(xmin,xmax), ylim=c(ymin,ymax ))
+  return(gg)
+}
+
+
+
+#####################################################################
+#####################################################################
+#' adjust and print the plot to the output format, it return a ggplot if pdf output
+#' or a plot_ly if html
+#' @param gg a ggplot object created with ggplot()
+#' @param title title sting, it can contain tex
+#' @param xlabel total time extend of the plot (T/2)
+#' @param ylabel can be "yes", everithig else means no
+#' @param xrange range of x axis, e.g. c(0,10)
+#' @param yrange range of y axis, e.g. c(0,10)
+#' @param to_print if you want to print now the plot now
+#' @import ggplot2, plotly, tikzDevice
+myplotly<-function(gg, title="",xlabel="", ylabel="", xrange=NULL, yrange=NULL, to_print=TRUE, save_pdf=""){
+  gg<- gg+ theme_bw()
+
+  if(knitr::is_html_output()) {
+    if(is.null(xrange)){autox=TRUE; rangex=xrange }else {autox=FALSE; rangex=xrange }
+    if(is.null(yrange)){autoy=TRUE; rangey=yrange }else {autoy=FALSE; rangey=yrange }
+    fig<- plotly::ggplotly(gg, dynamicTicks = TRUE)%>% layout(title=title ,
+                                                              xaxis = list(title = xlabel,showexponent = "all", exponentformat = "e", autorange = autox , range=rangex ) ,
+                                                              yaxis = list(title = ylabel,showexponent = "all", exponentformat = "e", autorange = autoy , range=rangey ))
+
+    if(to_print) print(htmltools::tagList(fig))
+  }
+  else if (knitr::is_latex_output() || is.null(save_pdf) ){
+    #if(!is.null(save_pdf) ) pdf(save_pdf)
+    #knitr::opts_chunk$set(  dev='tikz')
+    if (stringr::str_detect(xlabel,"\\$")){labelx=xlabel} else {labelx=paste0("\\verb|",xlabel,"|")}
+    if (stringr::str_detect(ylabel,"\\$")){labely=ylabel} else {labely=paste0("\\verb|",ylabel,"|")}
+    if (stringr::str_detect(title,"\\$")){mytitle=title} else {mytitle=paste0("\\verb|",title,"|")}
+
+    fig<-gg
+    if(!(is.null(yrange) && is.null(yrange))) fig<-fig +ggplot2::coord_cartesian(xlim= xrange,ylim= yrange)
+    else if(!is.null(xrange)) fig<-fig +ggplot2::coord_cartesian(xlim= xrange)
+    else if(!is.null(yrange)) fig<-fig +ggplot2::coord_cartesian(ylim= yrange)
+    fig<- fig +ggplot2::ggtitle(mytitle) +  ggplot2::xlab(labelx) + ggplot2::ylab(labely)
+    if(to_print) plot(fig)
+    if(!is.null(save_pdf) ) {
+      texfile=paste0(save_pdf,".tex")
+      tikzDevice::tikz(texfile,standAlone=TRUE)
+      plot(fig)
+      dev.off()
+      tools::texi2dvi(paste0(save_pdf,".tex"),pdf=TRUE)
+    }
+  }
+  else fig<- gg
+  return(fig)
+}
+

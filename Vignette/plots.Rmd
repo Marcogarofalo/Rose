@@ -1,0 +1,67 @@
+---
+title: "plots"
+author: "Marco Garofalo"
+date: "6/18/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("ggplot2")
+library("plotly")
+library("Rose")
+require(tikzDevice)
+```
+
+
+## Including Plots in html and pdf
+
+You can also embed plots, for example:
+
+
+```{r ,results='asis', dev='tikz'}
+gg<- ggplot()+ geom_point(aes(x=c(1,2,3),y=c(1,2,3)  ))
+for( i in c(1,2)){
+title<-paste('plot number',i,'$\\chi$')
+myplotly(gg, title,'$x_0/a$','a_b', c(0,2),c(0,1.5), to_print=TRUE, save_pdf="figure" )
+  cat("print some message \n\n")
+  cat('## New plot \n\n')
+  cat('second plot\n\n')
+}
+``` 
+
+
+# Importan to render plotly inside loop 
+
+The only way to render plotly inside loop is to add this line of code in the Rmarkdown, then you can add a plotly object `fig` inside a loop with `print(htmltools::tagList(fig))` , it is enought to use `include=FALSE` so that there is no
+output produced but the code will still run
+
+
+```{r ,include=FALSE}
+df <- data.frame(x = 1:5, y = 1:5)    
+f1 <- function(df) {
+  gg <- ggplot(df, aes(x,y)) + geom_point()
+  assign("ggp", plotly::ggplotly(gg), envir=parent.frame())
+  #ggp
+  df    # NOT returning a plot
+}
+res1 <- f1(df)
+ggp   # Let knit handle the plot
+```
+
+
+```{r eval=FALSE}
+{r ,include=FALSE}
+df <- data.frame(x = 1:5, y = 1:5)    
+f1 <- function(df) {
+  gg <- ggplot(df, aes(x,y)) + geom_point()
+  assign("ggp", plotly::ggplotly(gg), envir=parent.frame())
+  #ggp
+  df    # NOT returning a plot
+}
+res1 <- f1(df)
+ggp   # Let knit handle the plot
+```
+
