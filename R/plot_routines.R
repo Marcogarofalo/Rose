@@ -318,11 +318,42 @@ scale_fit_ggplot<-function(d, fit_range,Th, logscale="no", g,extrax=c(2,4), extr
 #' @param xrange range of x axis, e.g. c(0,10)
 #' @param yrange range of y axis, e.g. c(0,10)
 #' @param to_print if you want to print now the plot now
+#' @param save_pdf name of the file if you want to save (without .pdf)
 #' @import ggplot2, plotly, tikzDevice
-myplotly<-function(gg, title="",xlabel="", ylabel="", xrange=NULL, yrange=NULL, to_print=TRUE, save_pdf=""){
+myplotly<-function(gg, title="",xlabel="", ylabel="", xrange=NULL, yrange=NULL,output="AUTO", to_print=TRUE, save_pdf=NULL){
   gg<- gg+ theme_bw()
+  HTML=FALSE
+  PDF=FALSE
+  if (output=="AUTO"){
+    if(knitr::is_html_output()){
+      HTML=TRUE
+    }
+    else if(knitr::is_latex_output()){
+      PDF=TRUE
+    }
+    else {
+      HTML=TRUE
+      PDF=TRUE
+    }
 
-  if(knitr::is_html_output()) {
+  }
+  else if(output=="HTML"){
+    HTML=TRUE
+    PDF=FALSE
+  }
+  else if(output=="PDF"){
+    PDF=TRUE
+    HTML=FALSE
+  }
+
+
+  if(!is.null(save_pdf) ){
+    HTML=FALSE
+    PDF=TRUE
+  }
+
+
+  if(HTML) {
     if(is.null(xrange)){autox=TRUE; rangex=xrange }else {autox=FALSE; rangex=xrange }
     if(is.null(yrange)){autoy=TRUE; rangey=yrange }else {autoy=FALSE; rangey=yrange }
     fig<- plotly::ggplotly(gg, dynamicTicks = TRUE)%>% layout(title=title ,
@@ -331,7 +362,7 @@ myplotly<-function(gg, title="",xlabel="", ylabel="", xrange=NULL, yrange=NULL, 
 
     if(to_print) print(htmltools::tagList(fig))
   }
-  else if (knitr::is_latex_output() || is.null(save_pdf) ){
+  else if (PDF  ){
     #if(!is.null(save_pdf) ) pdf(save_pdf)
     #knitr::opts_chunk$set(  dev='tikz')
     if (stringr::str_detect(xlabel,"\\$")){labelx=xlabel} else {labelx=paste0("\\verb|",xlabel,"|")}
@@ -339,20 +370,27 @@ myplotly<-function(gg, title="",xlabel="", ylabel="", xrange=NULL, yrange=NULL, 
     if (stringr::str_detect(title,"\\$")){mytitle=title} else {mytitle=paste0("\\verb|",title,"|")}
 
     fig<-gg
-    if(!(is.null(yrange) && is.null(yrange))) fig<-fig +ggplot2::coord_cartesian(xlim= xrange,ylim= yrange)
-    else if(!is.null(xrange)) fig<-fig +ggplot2::coord_cartesian(xlim= xrange)
-    else if(!is.null(yrange)) fig<-fig +ggplot2::coord_cartesian(ylim= yrange)
-    fig<- fig +ggplot2::ggtitle(mytitle) +  ggplot2::xlab(labelx) + ggplot2::ylab(labely)
+    if(!(is.null(xrange) && is.null(yrange))) fig<-fig +ggplot2::coord_cartesian(xlim= xrange,ylim= yrange)
+    else if(is.null(yrange)) fig<-fig +ggplot2::coord_cartesian(xlim= xrange)
+    else if(is.null(xrange)) fig<-fig +ggplot2::coord_cartesian(ylim= yrange)
+    if(!is.null(title)) fig<- fig +ggplot2::ggtitle(mytitle)
+    if(!is.null(ylabel))fig<- fig +ggplot2::xlab(labelx)
+    if(!is.null(xlabel))fig<- fig +ggplot2::ylab(labely)
     if(to_print) plot(fig)
     if(!is.null(save_pdf) ) {
       texfile=paste0(save_pdf,".tex")
-      tikzDevice::tikz(texfile,standAlone=TRUE)
+      tikzDevice::tikz(texfile,standAlone=TRUE, width = 6, height = 4)
       plot(fig)
       dev.off()
       tools::texi2dvi(paste0(save_pdf,".tex"),pdf=TRUE)
     }
+
   }
-  else fig<- gg
+  else {
+    print("not output selected")
+    fig<- gg
+  }
+
   return(fig)
 }
 

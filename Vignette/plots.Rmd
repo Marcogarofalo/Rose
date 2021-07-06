@@ -3,8 +3,8 @@ title: "plots"
 author: "Marco Garofalo"
 date: "6/18/2021"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -25,11 +25,13 @@ You can also embed plots, for example:
 gg<- ggplot()+ geom_point(aes(x=c(1,2,3),y=c(1,2,3)  ))
 for( i in c(1,2)){
 title<-paste('plot number',i,'$\\chi$')
-myplotly(gg, title,'$x_0/a$','a_b', c(0,2),c(0,1.5), to_print=TRUE, save_pdf="figure" )
+myplotly(gg, title,'$x_0/a$','a_b', c(0,2),c(0,1.5), to_print=TRUE )
   cat("print some message \n\n")
   cat('## New plot \n\n')
   cat('second plot\n\n')
 }
+fig<-myplotly(gg, title="this will be saved in the file figure.pdf",'$x_0/a$','a_b', xrange=c(0,2),yrange=c(0,1.5), to_print=FALSE, save_pdf="figure" )
+
 ``` 
 
 
