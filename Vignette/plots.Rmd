@@ -3,8 +3,8 @@ title: "plots"
 author: "Marco Garofalo"
 date: "6/18/2021"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -67,3 +67,21 @@ res1 <- f1(df)
 ggp   # Let knit handle the plot
 ```
 
+
+# Formatting error
+
+```{r}
+mean_print(3.1572872, 0.8273827368723)
+mean_print(3.1572872, 0.8273827368723, digit=1)
+mean_print(3.1572872, 0.8273827368723, digit=5)
+mean_print(31572872, 8273827368723)
+```
+## Known issue 0.99999
+
+```{r}
+mean_print(3.1572872, 1.99999, digit=1)
+mean_print(3.1572872, 0.99999, digit=2)
+mean_print(3.1572872, 0.99999, digit=7)
+mean_print(3.99999, 1.99999, digit=1)
+
+```

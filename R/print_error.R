@@ -15,11 +15,12 @@
 #'  Each block is a chunk of data separated by an empty line
 #' @param mean mean value
 #' @param err error
+#' @param digit number of digit in the error, default=2
 #' @details  Important it allows only for 20 columns
 #' @export
 #' @examples mean_print(1.32,0.11)
 
-mean_print<-function(ave,err){
+mean_print<-function(ave,err,digit=2){
   if( !is.numeric(ave) | is.na(ave)  ){
     s=sprintf("NA")
     return(s)
@@ -41,10 +42,10 @@ mean_print<-function(ave,err){
   a<-(log10(ave1))
   e<-(log10(err+err/1000))
   if ( a<4  & a>-4){
-    we<-(err/10^(as.integer(e-2)))
+    we<-(err/10^(as.integer(e-digit)))
     if(e<0){
       e<-as.integer(e)
-      format=sprintf("%%.%df(%%.0f)",-e+2)
+      format=sprintf("%%.%df(%%.0f)",-e+digit)
       s=sprintf(format,ave1,we);
 
     }
