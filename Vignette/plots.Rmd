@@ -3,8 +3,10 @@ title: "plots"
 author: "Marco Garofalo"
 date: "6/18/2021"
 output:
-  html_document: default
-  pdf_document: default
+  html_document: 
+    toc: true
+  pdf_document: 
+    toc: true
 ---
 
 ```{r setup, include=FALSE}
@@ -67,6 +69,11 @@ res1 <- f1(df)
 ggp   # Let knit handle the plot
 ```
 
+
+# Colors
+
+to color automatically in html and pdf use the inline function  colorise or rize
+`r colorize("$\\alpha$ is red", "red")` and `r colorize("$\\beta$ is blue", "blue")`
 
 # Formatting error
 
