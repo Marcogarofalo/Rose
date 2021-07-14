@@ -319,8 +319,12 @@ scale_fit_ggplot<-function(d, fit_range,Th, logscale="no", g,extrax=c(2,4), extr
 #' @param yrange range of y axis, e.g. c(0,10)
 #' @param to_print if you want to print now the plot now
 #' @param save_pdf name of the file if you want to save (without .pdf)
+#' @param legend_position e.g c(0.5,0.5) middle, c(0,0) bottom left
 #' @import ggplot2, plotly, tikzDevice
-myplotly<-function(gg, title="",xlabel="", ylabel="", xrange=NULL, yrange=NULL,output="AUTO", to_print=TRUE, save_pdf=NULL){
+myplotly<-function(gg, title="",xlabel="", ylabel="",
+                   xrange=NULL, yrange=NULL,
+                   output="AUTO", to_print=TRUE, save_pdf=NULL,
+                   legend_position=NULL){
   gg<- gg+ theme_bw()
   HTML=FALSE
   PDF=FALSE
@@ -360,6 +364,7 @@ myplotly<-function(gg, title="",xlabel="", ylabel="", xrange=NULL, yrange=NULL,o
                                                               xaxis = list(title = xlabel,showexponent = "all", exponentformat = "e", autorange = autox , range=rangex ) ,
                                                               yaxis = list(title = ylabel,showexponent = "all", exponentformat = "e", autorange = autoy , range=rangey ))
 
+    if(!is.null(legend_position)) fig<-fig%>% layout(legend = list(x = legend_position[1], y = legend_position[2]))
     if(to_print) print(htmltools::tagList(fig))
   }
   else if (PDF  ){
@@ -376,6 +381,9 @@ myplotly<-function(gg, title="",xlabel="", ylabel="", xrange=NULL, yrange=NULL,o
     if(!is.null(title)) fig<- fig +ggplot2::ggtitle(mytitle)
     if(!is.null(ylabel))fig<- fig +ggplot2::xlab(labelx)
     if(!is.null(xlabel))fig<- fig +ggplot2::ylab(labely)
+
+    if(!is.null(legend_position)) fig<-fig+theme( legend.position =legend_position)
+
     if(to_print) plot(fig)
     if(!is.null(save_pdf) ) {
       texfile=paste0(save_pdf,".tex")
