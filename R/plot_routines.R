@@ -320,12 +320,15 @@ scale_fit_ggplot<-function(d, fit_range,Th, logscale="no", g,extrax=c(2,4), extr
 #' @param to_print if you want to print now the plot now
 #' @param save_pdf name of the file if you want to save (without .pdf)
 #' @param legend_position e.g c(0.5,0.5) middle, c(0,0) bottom left
+#' @param legend_title if NULL (default)  eliminate the legend title
 #' @import ggplot2, plotly, tikzDevice
 myplotly<-function(gg, title="",xlabel="", ylabel="",
                    xrange=NULL, yrange=NULL,
                    output="AUTO", to_print=TRUE, save_pdf=NULL,
-                   legend_position=NULL){
+                   legend_position=NULL, legend_title=NULL){
   gg<- gg+ theme_bw()
+  if(is.null(legend_title))gg<- gg+theme(legend.title = element_blank())
+
   HTML=FALSE
   PDF=FALSE
   if (output=="AUTO"){
@@ -387,7 +390,7 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
     if(to_print) plot(fig)
     if(!is.null(save_pdf) ) {
       texfile=paste0(save_pdf,".tex")
-      tikzDevice::tikz(texfile,standAlone=TRUE, width = 6, height = 4)
+      tikzDevice::tikz(texfile,standAlone=TRUE, width = 5, height = 5/1.618033)
       plot(fig)
       dev.off()
       tools::texi2dvi(paste0(save_pdf,".tex"),pdf=TRUE)
