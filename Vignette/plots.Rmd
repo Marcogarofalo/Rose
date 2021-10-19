@@ -24,16 +24,18 @@ You can also embed plots, for example:
 
 
 ```{r ,results='asis', dev='tikz'}
-gg<- ggplot()+ geom_point(aes(x=c(1,2,3),y=c(1,2,3)  ))
+#gg<- ggplot()+ geom_point(aes(x=c(1,2,3),y=c(1,2,3)  ))
+#gg<- ggplot()
+gg<-  geom_error(ggplot(),x=c(1,2,3),y=c(1,2,3) ,dy=c(0.5,0.5,0.5),color=c(1,2,3),size=c(3,2,1),width=0.2 )
 for( i in c(1,2)){
 title<-paste('plot number',i,'$\\chi$')
-myplotly(gg, title,'$x_0/a$','a_b', c(0,2),c(0,1.5), to_print=TRUE )
+myplotly(gg, title,'x_0/a','a_b', c(0,2),c(0,1.5), to_print=TRUE )
   cat("print some message \n\n")
   cat('## New plot \n\n')
   cat('second plot\n\n')
+  
 }
 fig<-myplotly(gg, title="this will be saved in the file figure.pdf",'$x_0/a$','a_b', xrange=c(0,2),yrange=c(0,1.5), to_print=FALSE, save_pdf="figure" )
-
 ``` 
 
 
