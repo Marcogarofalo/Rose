@@ -263,9 +263,16 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
                    xrange=NULL, yrange=NULL,
                    output="AUTO", to_print=TRUE, save_pdf=NULL,
                    legend_position=NULL, legend_title=NULL, width=680, height=480){
-  gg<- gg+ theme_bw()
-  if(is.null(legend_title))gg<- gg+theme(legend.title = element_blank())
-
+  gg<- gg+ ggplot2::theme_bw()
+  #
+   if(is.null(legend_title))
+     gg<- gg+ggplot2::theme(legend.title = element_blank())
+  # }else{
+  #   gg<- gg+ ggplot2::labs(color=legend_title,
+  #         fill=legend_title,
+  #         shape=legend_title,
+  #         size=legend_title)
+  # }
   HTML=FALSE
   PDF=FALSE
   if (output=="AUTO"){
@@ -311,6 +318,10 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
     if(!is.null(legend_position))
       fig<-fig%>% layout(legend = list(x = legend_position[1],
                                        y = legend_position[2]))
+ #     partial_bundle()
+  #    fig<- toWebGL(fig)
+      #fig<- fig %>% config(modeBarButtonsToAdd =
+      #                       list("drawine",  "eraseshape" ) )
     if(to_print) print(htmltools::tagList(fig))
   }
   else if (PDF  ){
@@ -427,7 +438,8 @@ reshape_df_analysis_to_ggplot<-function(d){
 #' @param  mylabel a label that goes in both color and fill
 #' @param  nudge  shift the point on the x axes, default 0
 #' @import ggplot2
-many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel, nudge=0.0){
+many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel, nudge=0.0,
+                          noerror=FALSE, noribbon=FALSE ){
 
   mydf<-reshape_df_analysis_to_ggplot(d)
   if (logscale=="yes"){
@@ -446,27 +458,27 @@ many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel, nud
   #            labels = trans_format("log10", math_format(10^.x)))
   mylabel<-mylabel
   gg <- g + ggplot2::geom_point(data=mydf,mapping=aes(x=x, y=y,
-                                                      colour=mylabel, fill=mylabel),
+                                              colour=mylabel, fill=mylabel, shape=mylabel),
                                 position =position_nudge(x=nudge),
                                                   inherit.aes = FALSE)
-
+  if (!noerror)
   gg <- gg +ggplot2::geom_errorbar(data=mydf, mapping=aes(x=x, ymin=y-err, ymax=y+err,
-                                                      color=mylabel, fill=mylabel),
+                                              color=mylabel, fill=mylabel, shape=mylabel),
                                    position =position_nudge(x=nudge),
                                    width = 0.3,inherit.aes = FALSE)
 
-
+  if (!noribbon)
   gg <- gg +ggplot2::geom_ribbon( data=mydf,
                 mapping=aes(x=xfit, ymin=fit-errfit,ymax=fit+errfit ,
-                            color=mylabel, fill=mylabel),
+                            color=mylabel, fill=mylabel, shape=mylabel),
                                   alpha=0.2      ,inherit.aes = FALSE, show.legend = FALSE)
   fit_range<-fit_range
 
   gg <- gg+ ggplot2::geom_line(data=mydf, aes(x=fit_range[1],y=y,
-                                              color=mylabel, fill=mylabel),
+                                              color=mylabel, fill=mylabel, shape=mylabel),
                                alpha=0.3, linetype="dashed",position =position_nudge(x=-0.1))
   gg <- gg+ ggplot2::geom_line( data=mydf ,aes(x=fit_range[2],y=y,
-                                               color=mylabel,  fill=mylabel),
+                                               color=mylabel,  fill=mylabel, shape=mylabel),
                                 alpha=0.3, linetype="dashed",position =position_nudge(x=0.1))
 
   #gg  <- gg + xlim(set_xmargin(fit_range,128/2) ) + ylim(-2e+4, 1e+4)
