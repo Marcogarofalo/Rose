@@ -263,8 +263,8 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
                    xrange=NULL, yrange=NULL,
                    output="AUTO", to_print=TRUE, save_pdf=NULL,
                    legend_position=NULL, legend_title=NULL, width=680, height=480){
-  gg<- gg+ ggplot2::theme_bw()
-  #
+  #gg<- gg+ ggplot2::theme_bw()
+
    if(is.null(legend_title))
      gg<- gg+ggplot2::theme(legend.title = element_blank())
   # }else{
@@ -440,6 +440,10 @@ reshape_df_analysis_to_ggplot<-function(d){
 #' @import ggplot2
 many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel, nudge=0.0,
                           noerror=FALSE, noribbon=FALSE ){
+  defaultW <- getOption("warn")
+
+  options(warn = -1)
+
 
   mydf<-reshape_df_analysis_to_ggplot(d)
   if (logscale=="yes"){
@@ -457,29 +461,38 @@ many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel, nud
   #gg <- gg+ scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
   #            labels = trans_format("log10", math_format(10^.x)))
   mylabel<-mylabel
+  if(is.null(g$scales$scales))
+    gg<- g+scale_shape_manual(values=seq(0,50))
+
   gg <- g + ggplot2::geom_point(data=mydf,mapping=aes(x=x, y=y,
                                               colour=mylabel, fill=mylabel, shape=mylabel),
                                 position =position_nudge(x=nudge),
+                                stroke = 0.3,
                                                   inherit.aes = FALSE)
   if (!noerror)
   gg <- gg +ggplot2::geom_errorbar(data=mydf, mapping=aes(x=x, ymin=y-err, ymax=y+err,
                                               color=mylabel, fill=mylabel, shape=mylabel),
                                    position =position_nudge(x=nudge),
-                                   width = 0.3,inherit.aes = FALSE)
+                                   width = 0.3,  stroke = 0.3,inherit.aes = FALSE)
 
   if (!noribbon)
   gg <- gg +ggplot2::geom_ribbon( data=mydf,
                 mapping=aes(x=xfit, ymin=fit-errfit,ymax=fit+errfit ,
                             color=mylabel, fill=mylabel, shape=mylabel),
-                                  alpha=0.2      ,inherit.aes = FALSE, show.legend = FALSE)
+                                  alpha=0.2 , stroke = 0.3     ,inherit.aes = FALSE, show.legend = FALSE)
   fit_range<-fit_range
-
-  gg <- gg+ ggplot2::geom_line(data=mydf, aes(x=fit_range[1],y=y,
+  yr1<-mydf$fit[fit_range[1]]-2*mydf$errfit[fit_range[1]]
+  yr2<-mydf$fit[fit_range[1]]+2*mydf$errfit[fit_range[1]]
+  gg <- gg+ ggplot2::geom_line( aes(x=fit_range[1],y=c(yr1,yr2 ),
                                               color=mylabel, fill=mylabel, shape=mylabel),
-                               alpha=0.3, linetype="dashed",position =position_nudge(x=-0.1))
-  gg <- gg+ ggplot2::geom_line( data=mydf ,aes(x=fit_range[2],y=y,
+                               alpha=0.3, stroke = 0.2, linetype="dashed",position =position_nudge(x=-0.1))
+
+  yr1<-mydf$fit[fit_range[2]]-2*mydf$errfit[fit_range[2]]
+  yr2<-mydf$fit[fit_range[2]]+2*mydf$errfit[fit_range[2]]
+  gg <- gg+ ggplot2::geom_line( aes(x=fit_range[2],
+                                               y=c(yr1,yr2 ),
                                                color=mylabel,  fill=mylabel, shape=mylabel),
-                                alpha=0.3, linetype="dashed",position =position_nudge(x=0.1))
+                                alpha=0.3, stroke = 0.2, linetype="dashed",position =position_nudge(x=0.1))
 
   #gg  <- gg + xlim(set_xmargin(fit_range,128/2) ) + ylim(-2e+4, 1e+4)
   #gg<- gg +geom_text(data=mydf, aes(x=x,y=y), label=mylabel)
@@ -487,6 +500,10 @@ many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel, nud
 
 
   gg <- gg+ggplot2::theme_bw()
+  #if (gg$scales$scales[1] == NULL)
+  # if(is.null(gg$scales$scales))
+      # gg<- gg+scale_shape_manual(values=seq(0,50))
+
   # len<-length(fit_par[1,])  /2-1
   # for(i in c(1:len )  ){
   #   if(! is.na(fit_par[1,i*2])) {
@@ -496,6 +513,7 @@ many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel, nud
   #   }
   # }
   #
+  options(warn = defaultW)
 
   return(gg)
 }
