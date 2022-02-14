@@ -127,18 +127,19 @@ geom_error<-function(gg,x,y, dy, ... ){
 #' from a data frame of the form
 #' t   data err fit err  t+h fit  err t+2h fit err
 #' return a data frame of the form
-#'  t   data err fit err
-#'  t+h   data err fit err
-#'  t+2h   data err fit err
+#'  t     data err t    fit err
+#'  t+h   data err t+h  fit err
+#'  t+2h  data err t+2h fit err
 #'  @param d data frame
 reshape_df_analysis_to_ggplot<-function(d){
 
   l<- length( which( d[1,]!="NA" ) )
   fit_precision<-   (l -2)/3  # the number of x of the fits
 
-  mydf <-data.frame('x'=c(0), 'y'=c(0), 'err'=c(0)
-                    ,'xfit'=c(0), 'fit'=c(0), 'errfit'=c(0) )
-  mydf<- mydf[-1,]
+  size=fit_precision*length(d[,1])
+  mydf <-data.frame('x'=rep(NA,size), 'y'=rep(NA,size), 'err'=rep(NA,size)
+                    ,'xfit'=rep(NA,size), 'fit'=rep(NA,size), 'errfit'=rep(NA,size) )
+  #mydf<- mydf[-1,]
   #
   colx <- c(1,c(1:fit_precision*3))[-2] # 1, 6, 9, 12,..#columns of the x
   colf <- c(4,c(1:fit_precision*3+1))[-2]# 4, 7, 10, 13,..#columns of the fit
@@ -146,9 +147,10 @@ reshape_df_analysis_to_ggplot<-function(d){
   count<-1
   for(i in c(1:fit_precision)) {
     for (t in c(1: length(d[,1])) ){
-      mylist  <-  list(d[t,1],d[t,2], d[t,3]  )
-      mylist  <- append(mylist, list( d[t,colx[i]],d[t,colf[i]], d[t,colferr[i]]  ) )
-      mydf[count,]<- mylist
+      # mylist  <-  list(d[t,1],d[t,2], d[t,3]  )
+      # mylist  <- append(mylist, list( d[t,colx[i]],d[t,colf[i]], d[t,colferr[i]]  ) )
+      mydf[count,]<-  list(d[t,1],d[t,2], d[t,3],
+                           d[t,colx[i]],d[t,colf[i]], d[t,colferr[i]] )
       count<-count+1
     }
   }
@@ -303,7 +305,6 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
     PDF=TRUE
   }
 
-
   if(HTML) {
     if(is.null(xrange)){autox=TRUE; rangex=xrange }else {autox=FALSE; rangex=xrange }
     if(is.null(yrange)){autoy=TRUE; rangey=yrange }else {autoy=FALSE; rangey=yrange }
@@ -335,9 +336,9 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
     if(!(is.null(xrange) && is.null(yrange))) fig<-fig +ggplot2::coord_cartesian(xlim= xrange,ylim= yrange)
     else if(is.null(yrange)) fig<-fig +ggplot2::coord_cartesian(xlim= xrange)
     else if(is.null(xrange)) fig<-fig +ggplot2::coord_cartesian(ylim= yrange)
-    if(!is.null(title)) fig<- fig +ggplot2::ggtitle(mytitle)
-    if(!is.null(ylabel))fig<- fig +ggplot2::xlab(labelx)
-    if(!is.null(xlabel))fig<- fig +ggplot2::ylab(labely)
+    if(!title=="") fig<- fig +ggplot2::ggtitle(mytitle)
+    if(!ylabel=="")fig<- fig +ggplot2::xlab(labelx)
+    if(!xlabel=="")fig<- fig +ggplot2::ylab(labely)
 
     if(!is.null(legend_position)) fig<-fig+theme( legend.position =legend_position)
 
@@ -552,9 +553,10 @@ print_fit_res<-function(label,fit,all_obs,l){
 #' @import ggplot2
 plot_corr<-function(string,all_obs,mt, L,T ,gg ,log,number=NULL, nudge=0.0, print_res=TRUE){
   string=sprintf("\\b%s\\b",string)# need to put the delimiters on the word to grep
-  label<-paste0(gsub('\\\\b','',string),"(L",L,"T",T,")")
+  label<-paste0(gsub('\\\\b','',string) )
   if (is.null(number)){
     l<-grep(string,all_obs[,"corr"])
+    if (purrr::is_empty(l)) stop("correlator not found")
     n<-all_obs[l,"n"]
   }
   else {
