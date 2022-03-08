@@ -39,7 +39,7 @@ read_df<- function(file){
 
 #' get a block of data
 #'
-#' This function allows you read a file in gnuplot style,
+#' This function allows to read a file in gnuplot style,
 #'  it enumerates the file with  blocks.
 #'  Each block is a chunk of data separated by an empty line
 #' @param df data frame constructed with read_df
@@ -52,7 +52,8 @@ get_block_n<- function(df,n){
   if (!rlang::is_empty(grep("^#", data[,1]) ) ) {
     data<-data[-grep("^#", data[,1])  ,  ]
   }
-  data<-dplyr::mutate_all(data, function(x) as.numeric(as.character(x)))
+  #data<-dplyr::mutate_all(data, function(x) as.numeric(as.character(x)))
+  data<-dplyr::mutate_all(data, function(x) as.numeric(x))
   return(data)
 }
 
@@ -105,18 +106,23 @@ get_plateaux_range<-function(df,n){
 
 get_all_corr<-function(df){
 
-  Nobs<-df[length(df[,1]),1]/2
+  #Nobs<-df[length(df[,1]),1]/2
+  Nobs<-  df[length(df[,1]),1]/2
 
+  corr<- data.frame("n"= c(1:Nobs),"corr"= c(1:Nobs),"fit_range"= c(1:Nobs),"chi2.dof"= c(1:Nobs))
 
-  corr<- data.frame("n"=c(0),"corr"=c(0),"fit_range"=c(0) ,"chi2.dof"=c(0))
+  # for (n in c(1:Nobs)){
+  #   l<-grep("fit",df[,3])
+  #   a1<-gsub("#","", df[l,2][n])
+  #   fit_range<- df[l,5][n]
+  #   chi2<-gsub("chi2=","", df[l,6][n])
+  #   corr[n,]<- list(n, a1,fit_range,chi2)
+  #
+  # }
 
-  for (n in c(1:Nobs)){
-    l<-grep("fit",df[,3])
-    a1<-gsub("#","", df[l,2][n])
-    fit_range<- df[l,5][n]
-    chi2<-gsub("chi2=","", df[l,6][n])
-    corr[n,]<- list(n, a1,fit_range,chi2)
-
-  }
+  l<-grep("fit",df[,3])
+  corr$corr<- gsub("#","", df[l,2])
+  corr$chi2.dof<- gsub("chi2=","", df[l,6])
+  corr$fit_range<- df[l,5]
   return(corr)
 }

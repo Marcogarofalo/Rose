@@ -407,13 +407,20 @@ reshape_df_analysis_to_ggplot<-function(d){
   l<- length( which( d[1,]!="NA" ) )
   fit_precision<-   (l -2)/3  # the number of x of the fits
 
-  mydf <-data.frame('x'=c(0), 'y'=c(0), 'err'=c(0)
-                    ,'xfit'=c(0), 'fit'=c(0), 'errfit'=c(0) )
-  mydf<- mydf[-1,]
+  # mydf <-data.frame('x'=c(0), 'y'=c(0), 'err'=c(0)
+  #                   ,'xfit'=c(0), 'fit'=c(0), 'errfit'=c(0) )
+  # mydf<- mydf[-1,]
   #
   colx <- c(1,c(1:fit_precision*3))[-2] # 1, 6, 9, 12,..#columns of the x
   colf <- c(4,c(1:fit_precision*3+1))[-2]# 4, 7, 10, 13,..#columns of the fit
   colferr <- c(5,c(1:fit_precision*3+2))[-2]# 5, 8, 11, 14,..#columns of the fit
+
+
+  size <- fit_precision*length(d[,1])
+  mydf <-data.frame('x'=rep(1:size), 'y'=rep(1:size), 'err'=rep(1:size)
+                     ,'xfit'=rep(1:size), 'fit'=rep(1:size),
+                    'errfit'=rep(1:size) )
+
   count<-1
   for(i in c(1:fit_precision)) {
     for (t in c(1: length(d[,1])) ){
@@ -423,6 +430,12 @@ reshape_df_analysis_to_ggplot<-function(d){
       count<-count+1
     }
   }
+  # mydf[,1]<-rep(d[,1], fit_precision)
+  # mydf[,2]<-rep(d[,2], fit_precision)
+  # mydf[,3]<-rep(d[,3], fit_precision)
+  # mydf[,4]<-stack(d,select = colx)[,1]
+  # mydf[,5]<-stack(d,select = colf)[,1]
+  # mydf[,6]<-stack(d,select = colferr)[,1]
 
   return(mydf)
 }
