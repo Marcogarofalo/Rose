@@ -26,6 +26,7 @@ You can also embed plots, for example:
 ```{r ,results='asis', dev='tikz'}
 #gg<- ggplot()+ geom_point(aes(x=c(1,2,3),y=c(1,2,3)  ))
 #gg<- ggplot()
+start_time <- Sys.time()
 source("../R/plot_routines.R")
 gg<-  geom_error(ggplot(),x=c(1,2,3),y=c(1,2,3) ,dy=c(0.5,0.5,0.5),
                  color=as.factor(c(1,2,3)),size=as.factor(c(3,2,1)),shape=as.factor(c(1,2,3)),width=0.2, stroke=0.3  )
@@ -39,6 +40,8 @@ myplotly(gg, title,'$x_0/a$','a_b', c(0,2),c(0,1.5), to_print=TRUE )
   
 }
 fig<-myplotly(gg, title="this will be saved in the file figure.pdf",'$x_0/a$','a_b', xrange=c(0,2),yrange=c(0,1.5), to_print=FALSE, save_pdf="figure" )
+end_time <- Sys.time()    
+end_time - start_time
 ``` 
 
 
@@ -73,6 +76,37 @@ f1 <- function(df) {
 res1 <- f1(df)
 ggp   # Let knit handle the plot
 ```
+
+# Read outfile
+
+
+
+```{r ,results='asis', dev='tikz'}
+#gg<- ggplot()+ geom_point(aes(x=c(1,2,3),y=c(1,2,3)  ))
+#gg<- ggplot()
+start_time <- Sys.time()
+source("../R/plot_routines.R")
+mt<-read_df("example.output")
+all_obs<- get_all_corr(mt)
+
+L<- 1 
+T<- 1
+# gg<- ggplot()
+# gg<-plot_corr("E1_0",all_obs,mt,L,T,gg,"no")
+# gg<-plot_corr("E1_1",all_obs,mt,L,T,gg,"no")
+# gg<-plot_corr("E3_0_vev",all_obs,mt,L,T,gg,"no")
+# fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y", to_print=TRUE )
+
+df<-add_corr_to_df("E1_0",all_obs,mt,gg)
+df<- rbind(df, add_corr_to_df("E1_1",all_obs,mt,gg)  )
+df<- rbind(df, add_corr_to_df("E3_0_vev",all_obs,mt,gg)  )
+gg<- plot_df_corr_ggplot(df)
+fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y", to_print=TRUE )
+
+end_time <- Sys.time()    
+end_time - start_time
+``` 
+
 
 
 # Colors

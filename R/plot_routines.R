@@ -533,6 +533,7 @@ many_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no", g, mylabel, nud
 }
 
 
+
 #####################################################################
 #####################################################################
 #' print result of a fit
@@ -564,7 +565,9 @@ print_fit_res<-function(label,fit,all_obs,l){
 #' @param  print_res  if you want the result of the fit to be printed
 #' default TRUE
 #' @import ggplot2
-plot_corr<-function(string,all_obs,mt, L,T ,gg ,log,number=NULL, nudge=0.0, print_res=TRUE){
+plot_corr<-function(string,all_obs,mt, L,T ,gg ,log="no",number=NULL,
+                    nudge=0.0, print_res=TRUE
+                     ){
   string=sprintf("\\b%s\\b",string)# need to put the delimiters on the word to grep
   label<-paste0(gsub('\\\\b','',string) )
   if (is.null(number)){
@@ -583,5 +586,101 @@ plot_corr<-function(string,all_obs,mt, L,T ,gg ,log,number=NULL, nudge=0.0, prin
   gg<- many_fit_ggplot(d,fit,fit_range,T/2,log,gg,  label ,nudge )
   if(print_res)  print_fit_res(label,fit,all_obs,l)
 
+
   return(gg)
 }
+
+
+
+#####################################################################
+#####################################################################
+#' plot a fit to some data appending to the existing ggplot
+#' @param gg a ggplot object created with ggplot()
+#' @param string name of the string to find
+#' @param  all_obs the outcome of Rose::get_all_corr()
+#' @param  log logscale default "no"
+#' @param  number if set it will ignore the string and plot the block selected by
+#' number
+#' @param  nudge  shift the point on the x axes, default 0
+#' @param  print_res  if you want the result of the fit to be printed
+#' default TRUE
+#' @import ggplot2
+add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
+                    nudge=0.0, print_res=TRUE ){
+  string=sprintf("\\b%s\\b",string)# need to put the delimiters on the word to grep
+  label<-paste0(gsub('\\\\b','',string) )
+  if (is.null(number)){
+    l<-grep(string,all_obs[,"corr"])
+    if (purrr::is_empty(l)) stop("correlator not found")
+    n<-all_obs[l,"n"]
+  }
+  else {
+    n=number
+    l=n
+  }
+
+  d<- get_block_n(mt,n)
+  fit<- get_fit_n(mt,n)
+  fit_range<- get_plateaux_range(mt,n)
+
+  mydf<-reshape_df_analysis_to_ggplot(d)
+  if (log){
+    mydf[,3]<- mydf[,3]/mydf[,2]
+    mydf[,6]<- mydf[,6]/mydf[,5]
+    mydf<-dplyr::mutate_at(mydf,c(2,5) ,function(x) log10(x) )
+  }
+  mydf$label <- label
+  mydf$tmin <- fit_range[1]
+  mydf$tmax <- fit_range[2]
+  mydf$x <- mydf$x +nudge
+  mydf$xfit <- mydf$xfit +nudge
+  if(print_res)  print_fit_res(label,fit,all_obs,l)
+
+  if(!is.null(df)) mydf <- rbind(df, mydf)
+  return(mydf)
+}
+
+
+#####################################################################
+#####################################################################
+#' plot a fit to some data appending to the existing ggplot
+#' @param g a ggplot object created with ggplot()
+#' @param d data frame
+#' @param  T total time extend of the plot (T/2)
+#' @param  logscale default "no"
+#' @param  fit_range  e.g. c(5,6)
+#' @param  fit_par unused
+#' @param  mylabel a label that goes in both color and fill
+#' @param  nudge  shift the point on the x axes, default 0
+#' @import ggplot2
+plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE ){
+  defaultW <- getOption("warn")
+  gg<- ggplot2::ggplot()+ggplot2::theme_bw()
+
+  gg <- gg + ggplot2::scale_shape_manual(values=seq(0,50))
+  gg <- gg + ggplot2::scale_color_manual(values=seq(1,50))
+  gg <- gg + ggplot2::scale_fill_manual(values=seq(1,50))
+  gg <- gg + ggplot2::geom_point(data=df,mapping=aes(x=x, y=y,
+                                        colour=label, fill=label, shape=label),
+                                stroke = 0.3,
+                                inherit.aes = FALSE)
+  if (!noerror)
+    gg <- gg +ggplot2::geom_errorbar(data=df,
+                                     mapping=aes(x=x, ymin=y-err, ymax=y+err,
+                                     color=label, fill=label, shape=label),
+                                     width = 0.3,  stroke = 0.3,inherit.aes = FALSE)
+
+  if (!noribbon){
+    dfp <- filter(df, xfit>=tmin, xfit<=tmax )
+    gg <- gg +ggplot2::geom_ribbon( data=dfp,
+                                    mapping=aes(x=xfit, ymin=fit-errfit,ymax=fit+errfit ,
+                                                color=label, fill=label, shape=label),
+                                    alpha=0.2 , stroke = 0.3     ,inherit.aes = FALSE, show.legend = FALSE)
+  }
+
+
+  options(warn = defaultW)
+
+  return(gg)
+}
+
