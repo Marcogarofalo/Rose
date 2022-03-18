@@ -15,31 +15,51 @@ set_xmargin<- function(fit_range, T){
 
 
 
+#' #' plot a plateaux
+#' #' @param d data frame
+#' #' @param  T total time extend of the plot (T/2)
+#' myggplot<-function(d,fit, fit_range,T,logscale="no"){
+#'
+#'   gg <- ggplot2::ggplot(d, aes(x=d[,1], y=d[,2])) + geom_point()
+#'   #gg  <- gg + xlim(set_xmargin(fit_range,T) ) + ylim(fit[1,1]-15*fit[1,2], fit[1,1]+15*fit[1,2])
+#'   gg <- gg +ggplot2::geom_errorbar(aes(ymin=d[,2]-d[,3], ymax=d[,2]+d[,3]),  width = 1)
+#'   gg <- gg+ labs(x = 't', y= 'y')
+#'   # plot orizontal line with fit
+#'   gg <- gg+ ggplot2::geom_segment(aes(x = fit_range[1], y = fit[1,1], xend = fit_range[2], yend = fit[1,1]) , linetype="dashed", color = "red")
+#'   gg <- gg+ ggplot2::geom_segment(aes(x = fit_range[1], y = fit[1,1]-fit[1,2], xend = fit_range[2], yend = fit[1,1]-fit[1,2]) , linetype="solid", color = "red")
+#'   gg <- gg+ ggplot2::geom_segment(aes(x = fit_range[1], y = fit[1,1]+fit[1,2], xend = fit_range[2], yend = fit[1,1]+fit[1,2]) , linetype="solid", color = "red")
+#'   gg <- gg+theme_bw()
+#'   s<- sprintf("%.6f",fit[1,1])
+#'   err<- sprintf("%.6f",fit[1,2])
+#'
+#'
+#'   pander(paste0("  fit: $m_{eff}=",s,"\\pm",err,"$"))
+#'   #plot(gg)
+#'   return(gg)
+#' }
+
+################################################################################
+################################################################################
 #' plot a plateaux
 #' @param d data frame
 #' @param  T total time extend of the plot (T/2)
+myggplot<-function(color=TRUE,shape=TRUE,fill=TRUE){
 
-myggplot<-function(d,fit, fit_range,T,logscale="no"){
-
-  gg <- ggplot2::ggplot(d, aes(x=d[,1], y=d[,2])) + geom_point()
-  #gg  <- gg + xlim(set_xmargin(fit_range,T) ) + ylim(fit[1,1]-15*fit[1,2], fit[1,1]+15*fit[1,2])
-  gg <- gg +ggplot2::geom_errorbar(aes(ymin=d[,2]-d[,3], ymax=d[,2]+d[,3]),  width = 1)
-  gg <- gg+ labs(x = 't', y= 'y')
-  # plot orizontal line with fit
-  gg <- gg+ ggplot2::geom_segment(aes(x = fit_range[1], y = fit[1,1], xend = fit_range[2], yend = fit[1,1]) , linetype="dashed", color = "red")
-  gg <- gg+ ggplot2::geom_segment(aes(x = fit_range[1], y = fit[1,1]-fit[1,2], xend = fit_range[2], yend = fit[1,1]-fit[1,2]) , linetype="solid", color = "red")
-  gg <- gg+ ggplot2::geom_segment(aes(x = fit_range[1], y = fit[1,1]+fit[1,2], xend = fit_range[2], yend = fit[1,1]+fit[1,2]) , linetype="solid", color = "red")
-  gg <- gg+theme_bw()
-  s<- sprintf("%.6f",fit[1,1])
-  err<- sprintf("%.6f",fit[1,2])
-
-
-  pander(paste0("  fit: $m_{eff}=",s,"\\pm",err,"$"))
-  #plot(gg)
+  gg <- ggplot2::ggplot()+ ggplot2::theme_bw()
+  if(color) gg <- gg +scale_color_manual(values=c("#000000","#0000CC","#CC0000",
+                                                  "#009900","#CC0099","#00CCFF",
+                                                  "#996600","#999999","#FFCC33",
+                                                  "#FF6600","#6633FF","#9966FF",
+                                                  "#006666","#FFCCFF",1:50))
+  #ggplot2::scale_color_manual(values=seq(1,50))
+  if(fill) gg <- gg + ggplot2::scale_fill_manual(values=c("#000000","#0000CC","#CC0000",
+                                                          "#009900","#CC0099","#00CCFF",
+                                                          "#996600","#999999","#FFCC33",
+                                                          "#FF6600","#6633FF","#9966FF",
+                                                          "#006666","#FFCCFF",1:50))
+  if(shape) gg <- gg + ggplot2::scale_shape_manual(values=seq(0,50))
   return(gg)
 }
-
-
 
 #####################################################################
 #####################################################################
@@ -47,8 +67,6 @@ myggplot<-function(d,fit, fit_range,T,logscale="no"){
 #' plot a fit to a data
 #' @param d data frame
 #' @param  T total time extend of the plot (T/2)
-
-
 my_fit_ggplot<-function(d,fit_par, fit_range,T, logscale="no"){
 
   l<- length(d[1,])
@@ -267,14 +285,14 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
                    legend_position=NULL, legend_title=NULL, width=680, height=480){
   #gg<- gg+ ggplot2::theme_bw()
 
-   if(is.null(legend_title))
+   if(is.null(legend_title)){
      gg<- gg+ggplot2::theme(legend.title = element_blank())
-  # }else{
-  #   gg<- gg+ ggplot2::labs(color=legend_title,
-  #         fill=legend_title,
-  #         shape=legend_title,
-  #         size=legend_title)
-  # }
+  }else{
+    gg<- gg+ ggplot2::labs(color=legend_title,
+          fill=legend_title,
+          shape=legend_title,
+          size=legend_title)
+  }
   HTML=FALSE
   PDF=FALSE
   if (output=="AUTO"){
@@ -594,25 +612,32 @@ plot_corr<-function(string,all_obs,mt, L,T ,gg ,log="no",number=NULL,
 
 #####################################################################
 #####################################################################
-#' plot a fit to some data appending to the existing ggplot
-#' @param gg a ggplot object created with ggplot()
+#' create or append a data frame with a fit
+#'
+#' create or append a data frame with a fit
 #' @param string name of the string to find
-#' @param  all_obs the outcome of Rose::get_all_corr()
-#' @param  log logscale default "no"
+#' @param all_obs the outcome of Rose::get_all_corr()
+#' @param mt result of Rose::read_df()
+#' @param df if specified append result to df
+#' @param log logscale default FALSE
 #' @param  number if set it will ignore the string and plot the block selected by
 #' number
 #' @param  nudge  shift the point on the x axes, default 0
 #' @param  print_res  if you want the result of the fit to be printed
 #' default TRUE
-#' @import ggplot2
+#' @export
 add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
                     nudge=0.0, print_res=TRUE ){
-  string=sprintf("\\b%s\\b",string)# need to put the delimiters on the word to grep
-  label<-paste0(gsub('\\\\b','',string) )
+  # string=sprintf("\\b%s\\b",string)# need to put the delimiters on the word to grep
+  #label<-paste0(gsub('\\\\b','',string) )
+  label<-paste0(string )
   if (is.null(number)){
-    l<-grep(string,all_obs[,"corr"])
-    if (purrr::is_empty(l)) stop("correlator not found")
-    n<-all_obs[l,"n"]
+    # l<-grep(string,all_obs[,"corr"])
+    # if (purrr::is_empty(l)) stop("correlator not found")
+    # n<-all_obs[l,"n"]
+    n<- which(all_obs[,"corr"]==string)
+    if (length(n)!=1)stop("correlator ",string,"not found")
+    l<-n
   }
   else {
     n=number
@@ -620,7 +645,7 @@ add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
   }
 
   d<- get_block_n(mt,n)
-  fit<- get_fit_n(mt,n)
+
   fit_range<- get_plateaux_range(mt,n)
 
   mydf<-reshape_df_analysis_to_ggplot(d)
@@ -634,7 +659,10 @@ add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
   mydf$tmax <- fit_range[2]
   mydf$x <- mydf$x +nudge
   mydf$xfit <- mydf$xfit +nudge
-  if(print_res)  print_fit_res(label,fit,all_obs,l)
+  if(print_res){
+    fit<- get_fit_n(mt,n)
+    print_fit_res(label,fit,all_obs,l)
+  }
 
   if(!is.null(df)) mydf <- rbind(df, mydf)
   return(mydf)
@@ -643,23 +671,21 @@ add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
 
 #####################################################################
 #####################################################################
-#' plot a fit to some data appending to the existing ggplot
-#' @param g a ggplot object created with ggplot()
-#' @param d data frame
-#' @param  T total time extend of the plot (T/2)
-#' @param  logscale default "no"
-#' @param  fit_range  e.g. c(5,6)
-#' @param  fit_par unused
-#' @param  mylabel a label that goes in both color and fill
-#' @param  nudge  shift the point on the x axes, default 0
+#' plot a fit to some data
+#' @param df data.frame created with Rose::add_corr_to_df()
+#' @param  noerror default FALSE
+#' @param  noribbon default FALSE
 #' @import ggplot2
-plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE ){
+plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL){
   defaultW <- getOption("warn")
-  gg<- ggplot2::ggplot()+ggplot2::theme_bw()
-
-  gg <- gg + ggplot2::scale_shape_manual(values=seq(0,50))
-  gg <- gg + ggplot2::scale_color_manual(values=seq(1,50))
-  gg <- gg + ggplot2::scale_fill_manual(values=seq(1,50))
+  if (is.null(gg)){
+    # gg<- ggplot2::ggplot()+ggplot2::theme_bw()
+    # gg <- gg + ggplot2::scale_shape_manual(values=seq(0,50))
+    # gg <- gg + ggplot2::scale_color_manual(values=seq(1,50))
+    # gg <- gg + ggplot2::scale_fill_manual(values=seq(1,50))
+    gg <- myggplot()
+  }
+  df$label<- factor(df$label, levels=unique(df$label))
   gg <- gg + ggplot2::geom_point(data=df,mapping=aes(x=x, y=y,
                                         colour=label, fill=label, shape=label),
                                 stroke = 0.3,
