@@ -397,19 +397,6 @@ set_xmargin<- function(fit_range, T){
 
 
 
-#####################################################################
-#####################################################################
-#'  add to a ggplot() points with symmetric error
-#'  @param gg a ggplot() object where to add the layers
-#'  @param x  coordinate
-#'  @param y  coordinate
-#'  @param x error on y coordinate
-#'  @param ... add the other aes options: color, size, fill, width
-geom_error<-function(gg,x,y, dy, ... ){
-  gg<- gg +  geom_point(aes(x=x, y=y,...) )
-  gg<- gg +  geom_errorbar(aes(x=x, ymin=y-dy, ymax=y+dy,...))
-  return(gg)
-}
 
 #####################################################################
 #####################################################################

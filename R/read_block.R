@@ -126,3 +126,18 @@ get_all_corr<-function(df){
   corr$fit_range<- df[l,5]
   return(corr)
 }
+
+get_res<-function(string,all_obs,mt,number=NULL){
+  label<-paste0(string )
+  if (is.null(number)){
+    n<- which(all_obs[,"corr"]==string)
+    if (length(n)!=1)stop("correlator ",string,"not found")
+  }
+  else {
+    n=number
+  }
+  d<- get_block_n(mt,n)
+  fit<- get_fit_n(mt,n)
+
+  return(c(fit[1,1],fit[1,2]))
+}
