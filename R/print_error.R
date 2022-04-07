@@ -20,7 +20,7 @@
 #' @export
 #' @examples mean_print(1.32,0.11)
 
-mean_print<-function(ave,err,digit=2){
+mean_print<-function(ave,err,digit=2,mean_exp=TRUE){
   if( !is.numeric(ave) | is.na(ave)  ){
     s=sprintf("NA")
     return(s)
@@ -60,12 +60,25 @@ mean_print<-function(ave,err,digit=2){
 
   }
   else{
-    a<-as.integer(a)
-    e<-as.integer(e)
-
-    wm<-( ave1/10^(e))
-    we<-(err/10^(e))
-    s=sprintf("%.1f(%.1f)e%+-d",wm,we,e);
+    if(mean_exp ){
+      a<-as.integer(a)
+      if (a<1) a<- a-1
+      e<-as.integer(e)
+      if (e<1) e<- e-1
+      wm<-( ave1/10^(a))
+      we<-(err/10^(a))
+      format=sprintf("%%.%df(%%.%.df)e%%+-d",a-e+digit-1,a-e+digit-1)
+      s=sprintf(format,wm,we,a)
+    }
+    else{
+      a<-as.integer(a)
+      e<-as.integer(e-digit)
+      wm<-( ave1/10^(e))
+      we<-(err/10^(e))
+      s=sprintf("%.0f(%.0f)e%+-d",wm,we,e);
+      #
+      #s=sprintf("%.1f(%.1f)e%+-d",wm,we,e);
+    }
   }
   if(ave<0)
     s=sprintf("-%s",s);
