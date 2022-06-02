@@ -67,8 +67,21 @@ mean_print<-function(ave,err,digit=2,mean_exp=TRUE){
       if (e<1) e<- e-1
       wm<-( ave1/10^(a))
       we<-(err/10^(a))
-      format=sprintf("%%.%df(%%.%.df)e%%+-d",a-e+digit-1,a-e+digit-1)
-      s=sprintf(format,wm,we,a)
+      #format=sprintf("%%.%df(%%.%.df)e%%+-d",a-e+digit-1,a-e+digit-1)
+
+      e1<-(log10(we))
+
+      if (e1<0 ){
+        e1<-as.integer(e1)
+        we<- we/ 10^(e1-2)
+        format=sprintf("%%.%df(%%.0f)e%%+-d",a-e+digit-1)
+        s=sprintf(format,wm,we,a)
+      }
+      else {
+        format=sprintf("%%.%df(%%.1f)e%%+-d",a-e+digit)
+        s=sprintf(format,wm,we,a)
+      }
+
     }
     else{
       a<-as.integer(a)

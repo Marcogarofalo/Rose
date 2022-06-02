@@ -611,6 +611,7 @@ plot_corr<-function(string,all_obs,mt, L,T ,gg ,log="no",number=NULL,
 #' number
 #' @param  nudge  shift the point on the x axes, default 0
 #' @param  print_res  if you want the result of the fit to be printed
+#' @param  required  stop if not found
 #' default TRUE
 #' @export
 add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
@@ -623,7 +624,9 @@ add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
     # if (purrr::is_empty(l)) stop("correlator not found")
     # n<-all_obs[l,"n"]
     n<- which(all_obs[,"corr"]==string)
-    if (length(n)!=1)stop("correlator ",string,"not found")
+    if (length(n)!=1 ){
+        stop("correlator ",string,"not found")
+    }
     l<-n
   }
   else {
