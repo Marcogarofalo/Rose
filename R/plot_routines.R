@@ -352,8 +352,9 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
 
     fig<-gg
     if(!(is.null(xrange) && is.null(yrange))) fig<-fig +ggplot2::coord_cartesian(xlim= xrange,ylim= yrange)
-    else if(is.null(yrange)) fig<-fig +ggplot2::coord_cartesian(xlim= xrange)
-    else if(is.null(xrange)) fig<-fig +ggplot2::coord_cartesian(ylim= yrange)
+    else if(!is.null(yrange)) fig<-fig +ggplot2::coord_cartesian(ylim= yrange)
+    else if(!is.null(xrange)) fig<-fig +ggplot2::coord_cartesian(xlim= xrange)
+
     if(!title=="") fig<- fig +ggplot2::ggtitle(mytitle)
     if(!ylabel=="")fig<- fig +ggplot2::xlab(labelx)
     if(!xlabel=="")fig<- fig +ggplot2::ylab(labely)
