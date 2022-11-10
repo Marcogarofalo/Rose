@@ -34,6 +34,7 @@ jobs:
           devtools::install()
         shell: Rscript {0}
       - name: Check
+        working-directory: ${{github.workspace}}
         run: |
           rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
           source("tests/test_mean_print.R")
