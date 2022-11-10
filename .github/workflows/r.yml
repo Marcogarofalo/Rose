@@ -29,6 +29,7 @@ jobs:
           r-version: ${{ matrix.r-version }}
       - name: Install dependencies
         run: |
+          install.packages("devtools")
           devtools::load_all()
           devtools::install()
         shell: Rscript {0}
