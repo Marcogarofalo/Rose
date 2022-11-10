@@ -50,11 +50,13 @@ mean_print<-function(ave,err,digit=2,mean_exp=TRUE){
 
     }
     else if(e>1){
-      s=sprintf("%.0f(%.0f)",ave1,err);
+      format=sprintf("%%.%df(%%.%df)",digit-2,digit-2)
+      s=sprintf(format,ave1,err);
 
     }
     else{
-      s=sprintf("%.1f(%.1f)",ave1,err);
+      format=sprintf("%%.%df(%%.%df)",digit-1, digit-1 )
+      s=sprintf(format,ave1,err);
 
     }
 
@@ -77,8 +79,13 @@ mean_print<-function(ave,err,digit=2,mean_exp=TRUE){
         format=sprintf("%%.%df(%%.0f)e%%+-d",a-e+digit-1)
         s=sprintf(format,wm,we,a)
       }
+      else if (e1<1) {
+        format=sprintf("%%.%df(%%.%df)e%%+-d",digit-1, digit-1 )
+        s=sprintf(format,wm,we,a)
+      }
       else {
-        format=sprintf("%%.%df(%%.1f)e%%+-d",a-e+digit)
+        dig_error=as.integer(e1)
+        format=sprintf("%%.%df(%%.%df)e%%+-d",digit-2,digit-2)
         s=sprintf(format,wm,we,a)
       }
 

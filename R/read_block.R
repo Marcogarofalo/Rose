@@ -156,3 +156,17 @@ get_full_res<-function(string,all_obs,mt,number=NULL){
 
   return(fit)
 }
+
+#' read the output of a fit namefit_fit_P.dat
+#'
+#' @param file name of the file
+read_fit_P_file<-function(file){
+  df<-read.table(file, fill=TRUE, row.names=NULL, col.names=c(1:40))
+  l<-list()
+  l$npar<-df[1,2]
+  l$chi2<-df[2,2]
+  l$P<- df[c(3:(3+l$npar-1)), c(1,2,3)]
+  l$C<- df[c((3+l$npar):(3+l$npar*2-1)),  c(1:l$npar) ]
+  return(l)
+}
+
