@@ -26,7 +26,9 @@ jobs:
 
     steps:
       - name: pwd
-        run: pwd
+        run: |
+           pwd
+           ls
       - name: install
         run: R CMD INSTALL --preclean --no-multiarch --with-keep.source .
       - name: test
