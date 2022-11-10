@@ -25,7 +25,7 @@ jobs:
         r-version: ['3.6.3', '4.1.1']
 
     steps:
-      - name:pwd
+      - name: pwd
         run: pwd
       - name: install
         run: R CMD INSTALL --preclean --no-multiarch --with-keep.source .
