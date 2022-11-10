@@ -21,12 +21,12 @@ jobs:
   runs-on: ubuntu-latest
   timeout-minutes: 5
   
-    steps:
-      - name: pwd
-        run: |
-             pwd
-             ls
-      - name: install
-        run: R CMD INSTALL --preclean --no-multiarch --with-keep.source .
-      - name: test
-        run: Rscript tests/test_mean_print.R
+  steps:
+    - name: pwd
+      run: |
+           pwd
+           ls
+    - name: install
+      run: R CMD INSTALL --preclean --no-multiarch --with-keep.source .
+    - name: test
+      run: Rscript tests/test_mean_print.R
