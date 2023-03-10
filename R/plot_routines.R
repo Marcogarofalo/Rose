@@ -282,7 +282,8 @@ scale_fit_ggplot<-function(d, fit_range,Th, logscale="no", g,extrax=c(2,4), extr
 myplotly<-function(gg, title="",xlabel="", ylabel="",
                    xrange=NULL, yrange=NULL,
                    output="AUTO", to_print=TRUE, save_pdf=NULL,
-                   legend_position=NULL, legend_title=NULL, width=680, height=480){
+                   legend_position=NULL, legend_title=NULL, width=680, height=480,
+                   latex_engine="pdflatex"){
   #gg<- gg+ ggplot2::theme_bw()
 
    if(is.null(legend_title)){
@@ -364,10 +365,13 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
     if(to_print) plot(fig)
     if(!is.null(save_pdf) ) {
       texfile=paste0(save_pdf,".tex")
-      tikzDevice::tikz(texfile,standAlone=TRUE, width = width/100, height = height/100)
+      tikzDevice::tikz(texfile,standAlone=TRUE,
+                       width = width/100,
+                       height = height/100
+                       )
       plot(fig)
       dev.off()
-      tools::texi2dvi(paste0(save_pdf,".tex"),pdf=TRUE)
+      tools::texi2dvi(paste0(save_pdf,".tex"), texi2dvi=latex_engine,pdf=TRUE)
     }
 
   }
@@ -670,30 +674,27 @@ add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
 plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL){
   defaultW <- getOption("warn")
   if (is.null(gg)){
-    # gg<- ggplot2::ggplot()+ggplot2::theme_bw()
-    # gg <- gg + ggplot2::scale_shape_manual(values=seq(0,50))
-    # gg <- gg + ggplot2::scale_color_manual(values=seq(1,50))
-    # gg <- gg + ggplot2::scale_fill_manual(values=seq(1,50))
     gg <- myggplot()
   }
   df$label<- factor(df$label, levels=unique(df$label))
   gg <- gg + ggplot2::geom_point(data=df,mapping=aes(x=x, y=y,
-                                        colour=label, fill=label, shape=label),
+                                      color=label, fill=label, shape=label),
                                 stroke = 0.3,
                                 inherit.aes = FALSE)
   if (!noerror)
     gg <- gg +ggplot2::geom_errorbar(data=df,
                                      mapping=aes(x=x, ymin=y-err, ymax=y+err,
-                                     color=label, fill=label, shape=label),
-                                     width = 0.3,  stroke = 0.3,inherit.aes = FALSE)
+                                     color=label),
+                                     width = 0.3,  inherit.aes = TRUE)
 
   if (!noribbon){
     dfp <- filter(df, xfit>=tmin, xfit<=tmax )
     gg <- gg +ggplot2::geom_ribbon( data=dfp,
                                     mapping=aes(x=xfit, ymin=fit-errfit,ymax=fit+errfit ,
-                                                color=label, fill=label, shape=label),
-                                    alpha=0.2 , stroke = 0.3     ,inherit.aes = FALSE, show.legend = FALSE)
+                                                color=label, fill=label),
+                                    alpha=0.2 , inherit.aes = TRUE, show.legend = FALSE)
   }
+  gg<-gg+guides(fill="none", shape="none")
 
 
   options(warn = defaultW)

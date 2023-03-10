@@ -81,8 +81,7 @@ ggp   # Let knit handle the plot
 
 
 ```{r ,results='asis', dev='tikz'}
-#gg<- ggplot()+ geom_point(aes(x=c(1,2,3),y=c(1,2,3)  ))
-#gg<- ggplot()
+
 start_time <- Sys.time()
 source("../R/plot_routines.R")
 mt<-read_df("example.output")
@@ -90,16 +89,22 @@ all_obs<- get_all_corr(mt)
 
 L<- 1 
 T<- 1
-# gg<- ggplot()
-# gg<-plot_corr("E1_0",all_obs,mt,L,T,gg,"no")
-# gg<-plot_corr("E1_1",all_obs,mt,L,T,gg,"no")
-# gg<-plot_corr("E3_0_vev",all_obs,mt,L,T,gg,"no")
-# fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y", to_print=TRUE )
 
-df<-add_corr_to_df("E1_0",all_obs,mt,gg)
-df<- rbind(df, add_corr_to_df("E1_1",all_obs,mt,gg)  )
-df<- rbind(df, add_corr_to_df("E3_0_vev",all_obs,mt,gg)  )
-gg<- plot_df_corr_ggplot(df)
+df<-add_corr_to_df(string = "E1_0",all_obs=all_obs,mt=mt,df = NULL,
+                   log = FALSE, number = NULL,nudge = 0,print_res = TRUE)
+df<-add_corr_to_df("E1_1",all_obs,mt,df)
+df<- add_corr_to_df("E3_0_vev",all_obs,mt,df, print_res = TRUE)
+fit<-get_full_res(string="E3_0_vev",all_obs,mt,number=NULL)
+fit
+n<- which(all_obs[,"corr"]=="E3_0_vev")
+all_obs[n,"chi2.dof"]
+
+#### add annotation not work in plotly
+#library(grid)
+#grob_5<- grobTree(textGrob( "note $1+1=2$",  x=0.32,  y=0.89, hjust=0,
+#                            gp=gpar(col="black", fontsize=40)))
+#gg<- gg + annotation_custom(grob_5)
+###
 fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y", to_print=TRUE )
 
 end_time <- Sys.time()    
@@ -121,10 +126,10 @@ mean_print(3.1572872, 0.8273827368723, digit=1)
 mean_print(3.1572872, 0.8273827368723, digit=5)
 mean_print(31572872, 8273827368723)
 ```
-## Known issue 0.99999
 
 ```{r}
 mean_print(3.1572872, 1.99999, digit=1)
+mean_print(3.1572872, 1.99999, digit=2)
 mean_print(3.1572872, 0.99999, digit=2)
 mean_print(3.1572872, 0.99999, digit=7)
 mean_print(3.99999, 1.99999, digit=1)
