@@ -105,6 +105,7 @@ all_obs[n,"chi2.dof"]
 #                            gp=gpar(col="black", fontsize=40)))
 #gg<- gg + annotation_custom(grob_5)
 ###
+gg<- plot_df_corr_ggplot(df)
 fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y", to_print=TRUE )
 
 end_time <- Sys.time()    
