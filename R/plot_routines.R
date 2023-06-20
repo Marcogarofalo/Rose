@@ -342,7 +342,13 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
   #    fig<- toWebGL(fig)
       #fig<- fig %>% config(modeBarButtonsToAdd =
       #                       list("drawine",  "eraseshape" ) )
-    if(to_print) print(htmltools::tagList(fig))
+    #if(to_print) print(htmltools::tagList(fig))
+    fig<-widgetframe::frameableWidget(fig%>%config(mathjax = "cdn") )
+    if(to_print){
+      # print(widgetframe::frameableWidget(fig))
+      # widgetframe::frameableWidget(fig)
+      print(htmltools::tagList(fig))
+    }
   }
   else if (PDF  ){
     #if(!is.null(save_pdf) ) pdf(save_pdf)
@@ -357,8 +363,8 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
     else if(!is.null(xrange)) fig<-fig +ggplot2::coord_cartesian(xlim= xrange)
 
     if(!title=="") fig<- fig +ggplot2::ggtitle(mytitle)
-    if(!ylabel=="")fig<- fig +ggplot2::xlab(labelx)
-    if(!xlabel=="")fig<- fig +ggplot2::ylab(labely)
+    if(!xlabel=="")fig<- fig +ggplot2::xlab(labelx)
+    if(!ylabel=="")fig<- fig +ggplot2::ylab(labely)
 
     if(!is.null(legend_position)) fig<-fig+theme( legend.position =legend_position)
 
@@ -620,7 +626,7 @@ plot_corr<-function(string,all_obs,mt, L,T ,gg ,log="no",number=NULL,
 #' default TRUE
 #' @export
 add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
-                    nudge=0.0, print_res=TRUE ){
+                    nudge=0.0, print_res=TRUE , rename=NULL){
   # string=sprintf("\\b%s\\b",string)# need to put the delimiters on the word to grep
   #label<-paste0(gsub('\\\\b','',string) )
   label<-paste0(string )
@@ -649,7 +655,8 @@ add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
     mydf[,6]<- mydf[,6]/mydf[,5]
     mydf<-dplyr::mutate_at(mydf,c(2,5) ,function(x) log10(x) )
   }
-  mydf$label <- label
+  if (is.null(rename)) mydf$label <- label
+  else   mydf$label <- rename
   mydf$tmin <- fit_range[1]
   mydf$tmax <- fit_range[2]
   mydf$x <- mydf$x +nudge
@@ -676,6 +683,8 @@ plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL){
   if (is.null(gg)){
     gg <- myggplot()
   }
+  # l<-which(!stringr::str_detect(df$label,"\\$"))
+  # df$label[l]<-paste0("\\verb|",df$label[l],"|")
   df$label<- factor(df$label, levels=unique(df$label))
   gg <- gg + ggplot2::geom_point(data=df,mapping=aes(x=x, y=y,
                                       color=label, fill=label, shape=label),
@@ -700,5 +709,13 @@ plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL){
   options(warn = defaultW)
 
   return(gg)
+}
+
+#' create a table with the fit result
+#' @param df data.frame created with Rose::read_fit_P_file("filename")
+make_table_fit_result<- function(df){
+  df1<-data.frame("P"=df$P[,1], "value"=mapply(mean_print, df$P[,2],df$P[,3] ) )
+  cap<-paste0("$\\chi^2/dof=$ ",df$chi2)
+  kable(df1, caption=cap)
 }
 
