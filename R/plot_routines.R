@@ -342,12 +342,13 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
   #    fig<- toWebGL(fig)
       #fig<- fig %>% config(modeBarButtonsToAdd =
       #                       list("drawine",  "eraseshape" ) )
-    #if(to_print) print(htmltools::tagList(fig))
-    fig<-widgetframe::frameableWidget(fig%>%config(mathjax = "cdn") )
+    # if(to_print) print(htmltools::tagList(fig%>%config(mathjax = "cdn")))
+    fig<-widgetframe::frameableWidget(fig%>%config(mathjax = "cdn",displayModeBar = FALSE) )
     if(to_print){
       # print(widgetframe::frameableWidget(fig))
       # widgetframe::frameableWidget(fig)
-      print(htmltools::tagList(fig))
+      # htmltools::frameWidget(fig)
+      print(htmltools::tagList(fig,"<\br >"))
     }
   }
   else if (PDF  ){
