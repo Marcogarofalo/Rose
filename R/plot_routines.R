@@ -679,7 +679,8 @@ add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
 #' @param  noerror default FALSE
 #' @param  noribbon default FALSE
 #' @import ggplot2
-plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL){
+plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL,
+                              width=0.3, alpha=alpha, stroke=0.3){
   defaultW <- getOption("warn")
   if (is.null(gg)){
     gg <- myggplot()
@@ -689,20 +690,20 @@ plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL){
   df$label<- factor(df$label, levels=unique(df$label))
   gg <- gg + ggplot2::geom_point(data=df,mapping=aes(x=x, y=y,
                                       color=label, fill=label, shape=label),
-                                stroke = 0.3,
+                                stroke = stroke,
                                 inherit.aes = FALSE)
   if (!noerror)
     gg <- gg +ggplot2::geom_errorbar(data=df,
                                      mapping=aes(x=x, ymin=y-err, ymax=y+err,
                                      color=label),
-                                     width = 0.3,  inherit.aes = TRUE)
+                                     width = width,  inherit.aes = TRUE)
 
   if (!noribbon){
     dfp <- filter(df, xfit>=tmin, xfit<=tmax )
     gg <- gg +ggplot2::geom_ribbon( data=dfp,
                                     mapping=aes(x=xfit, ymin=fit-errfit,ymax=fit+errfit ,
                                                 color=label, fill=label),
-                                    alpha=0.2 , inherit.aes = TRUE, show.legend = FALSE)
+                                    alpha=alpha , inherit.aes = TRUE, show.legend = FALSE)
   }
   gg<-gg+guides(fill="none", shape="none")
 
