@@ -627,7 +627,7 @@ plot_corr<-function(string,all_obs,mt, L,T ,gg ,log="no",number=NULL,
 #' default TRUE
 #' @export
 add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
-                    nudge=0.0, print_res=TRUE , rename=NULL){
+                    nudge=0.0, print_res=TRUE , rename=NULL, reshape=TRUE){
   # string=sprintf("\\b%s\\b",string)# need to put the delimiters on the word to grep
   #label<-paste0(gsub('\\\\b','',string) )
   label<-paste0(string )
@@ -650,7 +650,10 @@ add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
 
   fit_range<- get_plateaux_range(mt,n)
 
-  mydf<-reshape_df_analysis_to_ggplot(d)
+  if(reshape) mydf<-reshape_df_analysis_to_ggplot(d)
+  else mydf <- data.frame('x'=d[,1], 'y'=d[,2], 'err'=d[,3],
+                         'xfit'=d[,4], 'fit'=d[,5], 'errfit'=d[,6] )
+
   if (log){
     mydf[,3]<- mydf[,3]/mydf[,2]
     mydf[,6]<- mydf[,6]/mydf[,5]
@@ -680,7 +683,7 @@ add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
 #' @param  noribbon default FALSE
 #' @import ggplot2
 plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL,
-                              width=0.3, alpha=alpha, stroke=0.3){
+                              width=0.3, alpha=0.5, stroke=0.3){
   defaultW <- getOption("warn")
   if (is.null(gg)){
     gg <- myggplot()
