@@ -626,12 +626,13 @@ plot_corr<-function(string,all_obs,mt, L,T ,gg ,log="no",number=NULL,
 #' @param  required  stop if not found
 #' default TRUE
 #' @export
-add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
+add_corr_to_df<-function(string=NULL,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
                     nudge=0.0, print_res=TRUE , rename=NULL, reshape=TRUE){
   # string=sprintf("\\b%s\\b",string)# need to put the delimiters on the word to grep
   #label<-paste0(gsub('\\\\b','',string) )
-  label<-paste0(string )
   if (is.null(number)){
+    if (is.null(string))
+      stop("add_corr_to_df need at least one of the two arguments: sting or number ")
     # l<-grep(string,all_obs[,"corr"])
     # if (purrr::is_empty(l)) stop("correlator not found")
     # n<-all_obs[l,"n"]
@@ -640,10 +641,12 @@ add_corr_to_df<-function(string,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
         stop("correlator ",string,"not found")
     }
     l<-n
+    label<-paste0(string )
   }
   else {
     n=number
     l=n
+    label<-paste0(all_obs[n,"corr"] )
   }
 
   d<- get_block_n(mt,n)
