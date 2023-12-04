@@ -343,8 +343,8 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
       #fig<- fig %>% config(modeBarButtonsToAdd =
       #                       list("drawine",  "eraseshape" ) )
     # if(to_print) print(htmltools::tagList(fig%>%config(mathjax = "cdn")))
-    fig<-widgetframe::frameableWidget(fig%>%config(mathjax = "cdn",displayModeBar = FALSE) )
     if(to_print){
+      fig<-widgetframe::frameableWidget(fig%>%config(mathjax = "cdn",displayModeBar = FALSE) )
       # print(widgetframe::frameableWidget(fig))
       # widgetframe::frameableWidget(fig)
       # htmltools::frameWidget(fig)
@@ -627,7 +627,7 @@ plot_corr<-function(string,all_obs,mt, L,T ,gg ,log="no",number=NULL,
 #' default TRUE
 #' @export
 add_corr_to_df<-function(string=NULL,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
-                    nudge=0.0, print_res=TRUE , rename=NULL, reshape=TRUE){
+                    nudge=0.0, print_res=TRUE , rename=NULL, reshape=TRUE, logx=0){
   # string=sprintf("\\b%s\\b",string)# need to put the delimiters on the word to grep
   #label<-paste0(gsub('\\\\b','',string) )
   if (is.null(number)){
@@ -666,8 +666,22 @@ add_corr_to_df<-function(string=NULL,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
   else   mydf$label <- rename
   mydf$tmin <- fit_range[1]
   mydf$tmax <- fit_range[2]
+  if (logx==2){
+    mydf$x<- log2(mydf$x)
+    mydf$xfit<- log2(mydf$xfit)
+    mydf$tmin<-log2(mydf$tmin)
+    mydf$tmax<-log2(mydf$tmax)
+  }
+  else if (logx==10){
+    mydf$x<- log10(mydf$x)
+    mydf$xfit<- log10(mydf$xfit)
+    mydf$tmin<-log10(mydf$tmin)
+    mydf$tmax<-log10(mydf$tmax)
+  }
   mydf$x <- mydf$x +nudge
   mydf$xfit <- mydf$xfit +nudge
+  mydf$tmin<-mydf$tmin+nudge
+  mydf$tmax<-mydf$tmax+nudge
   if(print_res){
     fit<- get_fit_n(mt,n)
     print_fit_res(label,fit,all_obs,l)
@@ -723,7 +737,48 @@ plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL,
 #' @param df data.frame created with Rose::read_fit_P_file("filename")
 make_table_fit_result<- function(df){
   df1<-data.frame("P"=df$P[,1], "value"=mapply(mean_print, df$P[,2],df$P[,3] ) )
-  cap<-paste0("$\\chi^2/dof=$ ",df$chi2)
-  kable(df1, caption=cap)
+  # cap<-paste0("$\\chi^2/dof=$",df$chi2)
+  # kable(df1, caption=cap)
+  cat("$\\chi^2/dof=$ ",df$chi2,"\n\n")
+  kable(df1)
 }
 
+#' plot the result of a fit
+plot_fit<-function(basename,var, data_type=NULL){
+  filed<-paste0(basename,"_fit_data.txt")
+  df<- read.table(filed, header=FALSE, fill=TRUE)
+
+  gg<- myggplot()
+  idy<-ncol(df)-2
+  if (is.null(data_type))
+    data_type<-as.factor(df[,idy+2])
+
+  gg<-gg+  geom_pointrange(data=df,
+                           mapping=aes(x=df[,1] , y=df[,idy],
+                                       ymin=df[,idy]-df[,idy+1], ymax=df[,idy]+df[,idy+1],
+                                       color=data_type,shape=data_type,fill=data_type  )
+                           ,width=1e-4,size=1)
+
+  datalist = list()
+  lastr<-nrow(df)
+  for (n in c(df[1,idy+2]:df[lastr,idy+2])){
+
+    file=sprintf("%s_fit_out_n%d_%s.txt",basename,n,var)
+    #browser()
+    n1<-n+1
+    datalist[[n1]]<- read.table(file, header=FALSE, fill=TRUE,
+                                col.names=c(paste0("x",n),paste0("fit",n),paste0("fiterr",n)))
+    gg<-gg + geom_ribbon(data=datalist[[n1]],
+                         mapping=aes_string(x=datalist[[n1]][,1] ,
+                                            ymin=datalist[[n1]][,2]-datalist[[n1]][,3],
+                                            ymax=datalist[[n1]][,2]+datalist[[n1]][,3]
+                                            ,fill=as.factor("fit"),color=as.factor("fit"),shape=as.factor("fit") ),
+                         alpha=0.5 )
+    gg<-gg + geom_line(data=datalist[[n1]],
+                       mapping=aes_string(x=datalist[[n1]][,1] ,
+                                          y=datalist[[n1]][,2], fill=as.factor("fit"),
+                                          color=as.factor("fit"),shape=as.factor("fit")  )
+    )
+  }
+  return(gg)
+}
