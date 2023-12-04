@@ -58,6 +58,72 @@ get_block_n<- function(df,n){
 }
 
 
+get_block<-function(string=NULL,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
+                         nudge=0.0, print_res=TRUE , rename=NULL, reshape=TRUE,
+                        logx=0, ix=1, iy=2, ierr=3, ifit=4, ierrfit=5, iplateau=1){
+  # string=sprintf("\\b%s\\b",string)# need to put the delimiters on the word to grep
+  #label<-paste0(gsub('\\\\b','',string) )
+  if (is.null(number)){
+    if (is.null(string))
+      stop("add_corr_to_df need at least one of the two arguments: sting or number ")
+    n<- which(all_obs[,"corr"]==string)
+    if (length(n)!=1 ){
+      stop("correlator ",string,"not found")
+    }
+    l<-n
+    label<-paste0(string )
+  }
+  else {
+    n=number
+    l=n
+    label<-paste0(all_obs[n,"corr"] )
+  }
+  mydf<- get_block_n(mt,n)
+  #mydf<-mydf[ , colSums(is.na(mydf))==0]
+  fit_range<- get_plateaux_range(mt,n)
+
+  if (is.null(rename)) mydf$label <- label
+  else   mydf$label <- rename
+  mydf$x<-mydf[,ix]
+  mydf$y<-mydf[,iy]
+  mydf$err<-mydf[,ierr]
+  mydf$fit<-mydf[,ifit]
+  mydf$errfit<-mydf[,ierrfit]
+  if (log){
+    mydf$dy<- mydf$dy/mydf$y
+    mydf$dfit<- mydf$dfit/mydf$fit
+    mydf<-dplyr::mutate_at(mydf,c(iy,ifit) ,function(x) log10(x) )
+  }
+
+  tmin<-mydf[ which(mydf[,iplateau]==fit_range[1]),ix]
+  tmax<-mydf[ which(mydf[,iplateau]==fit_range[2]),ix]
+
+  ### alpha min
+  if (logx==2){
+    mydf$x<- log2(mydf$x)
+    tmin<-log2(tmin)
+    tmax<-log2(tmax)
+  }
+  else if (logx==10){
+    mydf$x<- log10(mydf$x)
+    tmin<-log10(tmin)
+    tmax<-log10(tmax)
+  }
+  mydf$x <- mydf$x +nudge
+  tmin<-tmin+nudge
+  tmax<-tmax+nudge
+
+  mydf$xfit<-mydf$x
+  mydf$tmin<-tmin
+  mydf$tmax<-tmax
+  if(print_res){
+    fit<- get_fit_n(mt,n)
+    print_fit_res(label,fit,all_obs,l)
+  }
+  if(!is.null(df)) mydf <- rbind(df, mydf)
+  return(mydf)
+}
+
 #' get fit result
 #'
 #' This function allows you read a file in gnuplot style,
