@@ -104,12 +104,25 @@ all_obs[n,"chi2.dof"]
 #gg<- gg + annotation_custom(grob_5)
 ###
 gg<- plot_df_corr_ggplot(df)
-fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y", to_print=TRUE )
+
+  
+fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y", to_print=TRUE, xrange = c(8.8,11),
+               yrange = c(0,1), output = "HTML")
+fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y", to_print=TRUE, xrange = c(8.8,11),
+               yrange = c(0,1), output = "PDF")
 
 end_time <- Sys.time()    
 end_time - start_time
 ``` 
 
+## palette
+
+```{r}
+source("../R/plot_routines.R")
+gg<-myggplot()
+gg<- gg+ geom_point(aes(x=c(1:10),y=c(1:10), color=as.factor(c(1:10)) ), size=4)
+gg
+```
 
 
 # Colors

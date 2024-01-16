@@ -118,7 +118,7 @@ get_block<-function(string=NULL,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
   mydf$tmax<-tmax
   if(print_res){
     fit<- get_fit_n(mt,n)
-    print_fit_res(label,fit,all_obs,l)
+    print_fit_res(mydf$label[1],fit,all_obs,l)
   }
   if(!is.null(df)) mydf <- rbind(df, mydf)
   return(mydf)

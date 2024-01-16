@@ -46,18 +46,20 @@ set_xmargin<- function(fit_range, T){
 myggplot<-function(color=TRUE,shape=TRUE,fill=TRUE){
 
   gg <- ggplot2::ggplot()+ ggplot2::theme_bw()
-  if(color) gg <- gg +scale_color_manual(values=c("#000000","#0000CC","#CC0000",
-                                                  "#009900","#CC0099","#00CCFF",
+  if(color) gg <- gg +scale_color_manual(values=c("#404040","#4863A0","#C04000",
+                                                  "#228B22","#8B008B","#00CCFF",
                                                   "#996600","#999999","#FFCC33",
                                                   "#FF6600","#6633FF","#9966FF",
                                                   "#006666","#FFCCFF",1:50))
   #ggplot2::scale_color_manual(values=seq(1,50))
-  if(fill) gg <- gg + ggplot2::scale_fill_manual(values=c("#000000","#0000CC","#CC0000",
-                                                          "#009900","#CC0099","#00CCFF",
+  if(fill) gg <- gg + ggplot2::scale_fill_manual(values=c("#404040","#4863A0","#C04000",
+                                                          "#228B22","#8B008B","#00CCFF",
                                                           "#996600","#999999","#FFCC33",
                                                           "#FF6600","#6633FF","#9966FF",
                                                           "#006666","#FFCCFF",1:50))
-  if(shape) gg <- gg + ggplot2::scale_shape_manual(values=seq(0,50))
+  if(shape) gg <- gg + ggplot2::scale_shape_manual(
+      values=c(0,1,2,4,5,6,7,8,11,15,16,17,18,21,22,23,24,25)
+      )
   return(gg)
 }
 
@@ -155,13 +157,13 @@ reshape_df_analysis_to_ggplot<-function(d){
   fit_precision<-   (l -2)/3  # the number of x of the fits
 
   size=fit_precision*length(d[,1])
-  mydf <-data.frame('x'=rep(NA,size), 'y'=rep(NA,size), 'err'=rep(NA,size)
-                    ,'xfit'=rep(NA,size), 'fit'=rep(NA,size), 'errfit'=rep(NA,size) )
   #mydf<- mydf[-1,]
   #
   colx <- c(1,c(1:fit_precision*3))[-2] # 1, 6, 9, 12,..#columns of the x
   colf <- c(4,c(1:fit_precision*3+1))[-2]# 4, 7, 10, 13,..#columns of the fit
   colferr <- c(5,c(1:fit_precision*3+2))[-2]# 5, 8, 11, 14,..#columns of the fit
+  mydf <-data.frame('x'=rep(NA,size), 'y'=rep(NA,size), 'err'=rep(NA,size)
+                    ,'xfit'=rep(NA,size), 'fit'=rep(NA,size), 'errfit'=rep(NA,size) )
   count<-1
   for(i in c(1:fit_precision)) {
     for (t in c(1: length(d[,1])) ){
@@ -172,6 +174,14 @@ reshape_df_analysis_to_ggplot<-function(d){
       count<-count+1
     }
   }
+  # mydf <-data.frame('x'=rep(d[,1],fit_precision),
+  #                   'y'=rep(d[,2],fit_precision),
+  #                   'err'=rep(d[,3],fit_precision),
+  #                   'xfit'=rep(NA,size),
+  #                   'fit'=rep(NA,size),
+  #                   'errfit'=rep(NA,size)
+  #                   )
+
 
   return(mydf)
 }
@@ -282,18 +292,25 @@ scale_fit_ggplot<-function(d, fit_range,Th, logscale="no", g,extrax=c(2,4), extr
 myplotly<-function(gg, title="",xlabel="", ylabel="",
                    xrange=NULL, yrange=NULL,
                    output="AUTO", to_print=TRUE, save_pdf=NULL,
-                   legend_position=NULL, legend_title=NULL, width=680, height=480,
+                   legend_position=c(0,1), legend_title=NULL, width=680, height=480,
                    latex_engine="pdflatex"){
   #gg<- gg+ ggplot2::theme_bw()
 
-   if(is.null(legend_title)){
-     gg<- gg+ggplot2::theme(legend.title = element_blank())
-  }else{
-    gg<- gg+ ggplot2::labs(color=legend_title,
+
+  gg<- gg+ ggplot2::labs(color=legend_title,
           fill=legend_title,
           shape=legend_title,
           size=legend_title)
-  }
+
+  gg<- gg+ ggplot2::theme(
+    panel.background     = ggplot2::element_rect(fill = "white", color = NA),
+
+    legend.key           = element_rect(fill = NA, color = NA),
+    legend.background    = element_rect(fill = "#ffffff80", color = NA, size = 1),
+    legend.justification = c(1, 1),
+
+    legend.box.margin    = margin(1, 0, 0, 0),
+  )
   HTML=FALSE
   PDF=FALSE
   if (output=="AUTO"){
@@ -344,7 +361,8 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
       #                       list("drawine",  "eraseshape" ) )
     # if(to_print) print(htmltools::tagList(fig%>%config(mathjax = "cdn")))
     if(to_print){
-      fig<-widgetframe::frameableWidget(fig%>%config(mathjax = "cdn",displayModeBar = FALSE) )
+      fig<-widgetframe::frameableWidget(fig%>%config(mathjax = "cdn",
+                                                     displayModeBar = FALSE) )
       # print(widgetframe::frameableWidget(fig))
       # widgetframe::frameableWidget(fig)
       # htmltools::frameWidget(fig)
@@ -367,7 +385,7 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
     if(!xlabel=="")fig<- fig +ggplot2::xlab(labelx)
     if(!ylabel=="")fig<- fig +ggplot2::ylab(labely)
 
-    if(!is.null(legend_position)) fig<-fig+theme( legend.position =legend_position)
+    if(!is.null(legend_position)) fig<-fig+theme( legend.position =legend_position+c(0.18,0))
 
     if(to_print) plot(fig)
     if(!is.null(save_pdf) ) {
@@ -419,43 +437,44 @@ set_xmargin<- function(fit_range, T){
 #'  t+h   data err fit err
 #'  t+2h   data err fit err
 #'  @param d data frame
-reshape_df_analysis_to_ggplot<-function(d){
-
-  l<- length( which( d[1,]!="NA" ) )
-  fit_precision<-   (l -2)/3  # the number of x of the fits
-
-  # mydf <-data.frame('x'=c(0), 'y'=c(0), 'err'=c(0)
-  #                   ,'xfit'=c(0), 'fit'=c(0), 'errfit'=c(0) )
-  # mydf<- mydf[-1,]
-  #
-  colx <- c(1,c(1:fit_precision*3))[-2] # 1, 6, 9, 12,..#columns of the x
-  colf <- c(4,c(1:fit_precision*3+1))[-2]# 4, 7, 10, 13,..#columns of the fit
-  colferr <- c(5,c(1:fit_precision*3+2))[-2]# 5, 8, 11, 14,..#columns of the fit
-
-
-  size <- fit_precision*length(d[,1])
-  mydf <-data.frame('x'=rep(1:size), 'y'=rep(1:size), 'err'=rep(1:size)
-                     ,'xfit'=rep(1:size), 'fit'=rep(1:size),
-                    'errfit'=rep(1:size) )
-
-  count<-1
-  for(i in c(1:fit_precision)) {
-    for (t in c(1: length(d[,1])) ){
-      mylist  <-  list(d[t,1],d[t,2], d[t,3]  )
-      mylist  <- append(mylist, list( d[t,colx[i]],d[t,colf[i]], d[t,colferr[i]]  ) )
-      mydf[count,]<- mylist
-      count<-count+1
-    }
-  }
-  # mydf[,1]<-rep(d[,1], fit_precision)
-  # mydf[,2]<-rep(d[,2], fit_precision)
-  # mydf[,3]<-rep(d[,3], fit_precision)
-  # mydf[,4]<-stack(d,select = colx)[,1]
-  # mydf[,5]<-stack(d,select = colf)[,1]
-  # mydf[,6]<-stack(d,select = colferr)[,1]
-
-  return(mydf)
-}
+# reshape_df_analysis_to_ggplot<-function(d){
+#
+#   l<- length( which( d[1,]!="NA" ) )
+#   fit_precision<-   (l -2)/3  # the number of x of the fits
+#
+#   # mydf <-data.frame('x'=c(0), 'y'=c(0), 'err'=c(0)
+#   #                   ,'xfit'=c(0), 'fit'=c(0), 'errfit'=c(0) )
+#   # mydf<- mydf[-1,]
+#   #
+#   colx <- c(1,c(1:fit_precision*3))[-2] # 1, 6, 9, 12,..#columns of the x
+#   colf <- c(4,c(1:fit_precision*3+1))[-2]# 4, 7, 10, 13,..#columns of the fit
+#   colferr <- c(5,c(1:fit_precision*3+2))[-2]# 5, 8, 11, 14,..#columns of the fit
+#
+#
+#   size <- fit_precision*length(d[,1])
+#   mydf <-data.frame('x'=rep(1:size), 'y'=rep(1:size), 'err'=rep(1:size)
+#                      ,'xfit'=rep(1:size), 'fit'=rep(1:size),
+#                     'errfit'=rep(1:size) )
+#
+#   count<-1
+#   for(i in c(1:fit_precision)) {
+#     for (t in c(1: length(d[,1])) ){
+#       mylist  <-  list(d[t,1],d[t,2], d[t,3]  )
+#       mylist  <- append(mylist, list( d[t,colx[i]],d[t,colf[i]], d[t,colferr[i]]  ) )
+#       mydf[count,]<- mylist
+#       count<-count+1
+#     }
+#   }
+#   # browser()
+#   # mydf[,1]<-rep(d[,1], fit_precision)
+#   # mydf[,2]<-rep(d[,2], fit_precision)
+#   # mydf[,3]<-rep(d[,3], fit_precision)
+#   # mydf[,4]<-stack(d,select = colx)[,1]
+#   # mydf[,5]<-stack(d,select = colf)[,1]
+#   # mydf[,6]<-stack(d,select = colferr)[,1]
+#
+#   return(mydf)
+# }
 
 #####################################################################
 #####################################################################
@@ -700,7 +719,7 @@ add_corr_to_df<-function(string=NULL,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
 #' @param  noribbon default FALSE
 #' @import ggplot2
 plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL,
-                              width=0.3, alpha=0.5, stroke=0.3){
+                              width=0.02, alpha=0.5, stroke=0.3){
   defaultW <- getOption("warn")
   if (is.null(gg)){
     gg <- myggplot()
@@ -712,12 +731,14 @@ plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL,
                                       color=label, fill=label, shape=label),
                                 stroke = stroke,
                                 inherit.aes = FALSE)
-  if (!noerror)
+  if (!noerror){
+    xrange<-layer_scales(gg)$x$range$range
     gg <- gg +ggplot2::geom_errorbar(data=df,
                                      mapping=aes(x=x, ymin=y-err, ymax=y+err,
                                      color=label),
-                                     width = width,  inherit.aes = TRUE)
-
+                                     width = (xrange[2]-xrange[1])*width,
+                                     size=0.1, inherit.aes = TRUE)
+  }
   if (!noribbon){
     dfp <- filter(df, xfit>=tmin, xfit<=tmax )
     gg <- gg +ggplot2::geom_ribbon( data=dfp,
