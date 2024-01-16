@@ -105,9 +105,12 @@ all_obs[n,"chi2.dof"]
 ###
 gg<- plot_df_corr_ggplot(df)
 
-  
+fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y", to_print=TRUE,
+               yrange = c(0,1), output = "HTML")  
 fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y", to_print=TRUE, xrange = c(8.8,11),
                yrange = c(0,1), output = "HTML")
+fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y", to_print=TRUE, 
+               yrange = c(0,1), output = "PDF")
 fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y", to_print=TRUE, xrange = c(8.8,11),
                yrange = c(0,1), output = "PDF")
 

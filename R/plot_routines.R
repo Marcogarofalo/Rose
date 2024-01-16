@@ -377,9 +377,11 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
     if (stringr::str_detect(title,"\\$")){mytitle=title} else {mytitle=paste0("\\verb|",title,"|")}
 
     fig<-gg
-    if(!(is.null(xrange) && is.null(yrange))) fig<-fig +ggplot2::coord_cartesian(xlim= xrange,ylim= yrange)
-    else if(!is.null(yrange)) fig<-fig +ggplot2::coord_cartesian(ylim= yrange)
-    else if(!is.null(xrange)) fig<-fig +ggplot2::coord_cartesian(xlim= xrange)
+    # if(!(is.null(xrange) && is.null(yrange))) fig<-fig +ggplot2::coord_cartesian(xlim= xrange,ylim= yrange)
+    # else if(!is.null(xrange)) fig<-fig +ggplot2::coord_cartesian(xlim= xrange)
+    # else if(!is.null(yrange)) fig<-fig +ggplot2::coord_cartesian(ylim= yrange)
+    if(!is.null(xrange)) fig<-fig + xlim(xrange[1],xrange[2])
+    if(!is.null(yrange)) fig<-fig + ylim(yrange[1],yrange[2])
 
     if(!title=="") fig<- fig +ggplot2::ggtitle(mytitle)
     if(!xlabel=="")fig<- fig +ggplot2::xlab(labelx)
@@ -719,7 +721,7 @@ add_corr_to_df<-function(string=NULL,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
 #' @param  noribbon default FALSE
 #' @import ggplot2
 plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL,
-                              width=0.02, alpha=0.5, stroke=0.3){
+                              width=0.3, alpha=0.5, stroke=0.3){
   defaultW <- getOption("warn")
   if (is.null(gg)){
     gg <- myggplot()
@@ -736,7 +738,8 @@ plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL,
     gg <- gg +ggplot2::geom_errorbar(data=df,
                                      mapping=aes(x=x, ymin=y-err, ymax=y+err,
                                      color=label),
-                                     width = (xrange[2]-xrange[1])*width,
+                                     # width = (xrange[2]-xrange[1])*width,
+                                     width = width,
                                      size=0.1, inherit.aes = TRUE)
   }
   if (!noribbon){
