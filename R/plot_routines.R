@@ -768,41 +768,77 @@ make_table_fit_result<- function(df){
 }
 
 #' plot the result of a fit
-plot_fit<-function(basename,var, data_type=NULL){
+plot_fit<-function(basename,var, data_type=NULL, gg=NULL, noribbon=FALSE,
+                   labelfit="fit", width=0.02, size=1,
+                   id_color=NULL, id_shape=NULL){
   filed<-paste0(basename,"_fit_data.txt")
   df<- read.table(filed, header=FALSE, fill=TRUE)
 
-  gg<- myggplot()
+  if (is.null(gg)) gg<- myggplot()
   idy<-ncol(df)-2
   if (is.null(data_type))
     data_type<-as.factor(df[,idy+2])
 
-  gg<-gg+  geom_pointrange(data=df,
+  if (is.null(id_color))
+    color_type<-as.factor(df[,idy+2])
+  else
+    color_type<-as.factor(df[,id_color])
+
+  if (is.null(id_shape))
+    shape_type<-as.factor(df[,idy+2])
+  else
+    shape_type<-as.factor(df[,id_shape])
+
+
+    gg<-gg+  geom_point(data=df,
                            mapping=aes(x=df[,1] , y=df[,idy],
-                                       ymin=df[,idy]-df[,idy+1], ymax=df[,idy]+df[,idy+1],
-                                       color=data_type,shape=data_type,fill=data_type  )
-                           ,width=1e-4,size=1)
+                                       color=color_type,
+                                       shape=shape_type,
+                                       fill=color_type  )
+                           ,width=width,size=size)
+
+   gg<-gg+  geom_errorbar(data=df,
+                           mapping=aes(x=df[,1] , y=df[,idy],
+                                       ymin=df[,idy]-df[,idy+1],
+                                       ymax=df[,idy]+df[,idy+1],
+                                       color=color_type,
+                                       shape=shape_type,
+                                       fill=color_type  )
+                           ,width=width,size=size)
+
 
   datalist = list()
   lastr<-nrow(df)
-  for (n in c(df[1,idy+2]:df[lastr,idy+2])){
+  mycol<-unique(paste0(labelfit,color_type))
+  Nfits<-c(df[1,idy+2]:df[lastr,idy+2])
+  if (length(mycol)!=length(Nfits) )
+    mycol<-paste0("fit-",Nfits)
+
+  if(!noribbon){
+  for (n in Nfits){
 
     file=sprintf("%s_fit_out_n%d_%s.txt",basename,n,var)
     #browser()
     n1<-n+1
     datalist[[n1]]<- read.table(file, header=FALSE, fill=TRUE,
                                 col.names=c(paste0("x",n),paste0("fit",n),paste0("fiterr",n)))
-    gg<-gg + geom_ribbon(data=datalist[[n1]],
+    gg<-gg + geom_ribbon(
                          mapping=aes_string(x=datalist[[n1]][,1] ,
                                             ymin=datalist[[n1]][,2]-datalist[[n1]][,3],
-                                            ymax=datalist[[n1]][,2]+datalist[[n1]][,3]
-                                            ,fill=as.factor("fit"),color=as.factor("fit"),shape=as.factor("fit") ),
+                                            ymax=datalist[[n1]][,2]+datalist[[n1]][,3],
+                                            fill=as.factor(mycol),
+                                            color=as.factor(mycol),
+                                            shape=as.factor(mycol)
+                                            ),
                          alpha=0.5 )
-    gg<-gg + geom_line(data=datalist[[n1]],
+    gg<-gg + geom_line(
                        mapping=aes_string(x=datalist[[n1]][,1] ,
-                                          y=datalist[[n1]][,2], fill=as.factor("fit"),
-                                          color=as.factor("fit"),shape=as.factor("fit")  )
+                                          y=datalist[[n1]][,2],
+                                          fill=as.factor(mycol),
+                                          color=as.factor(mycol),
+                                          shape=as.factor(mycol)  )
     )
+  }
   }
   return(gg)
 }
