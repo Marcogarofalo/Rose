@@ -15,48 +15,26 @@ set_xmargin<- function(fit_range, T){
 
 
 
-#' #' plot a plateaux
-#' #' @param d data frame
-#' #' @param  T total time extend of the plot (T/2)
-#' myggplot<-function(d,fit, fit_range,T,logscale="no"){
-#'
-#'   gg <- ggplot2::ggplot(d, aes(x=d[,1], y=d[,2])) + geom_point()
-#'   #gg  <- gg + xlim(set_xmargin(fit_range,T) ) + ylim(fit[1,1]-15*fit[1,2], fit[1,1]+15*fit[1,2])
-#'   gg <- gg +ggplot2::geom_errorbar(aes(ymin=d[,2]-d[,3], ymax=d[,2]+d[,3]),  width = 1)
-#'   gg <- gg+ labs(x = 't', y= 'y')
-#'   # plot orizontal line with fit
-#'   gg <- gg+ ggplot2::geom_segment(aes(x = fit_range[1], y = fit[1,1], xend = fit_range[2], yend = fit[1,1]) , linetype="dashed", color = "red")
-#'   gg <- gg+ ggplot2::geom_segment(aes(x = fit_range[1], y = fit[1,1]-fit[1,2], xend = fit_range[2], yend = fit[1,1]-fit[1,2]) , linetype="solid", color = "red")
-#'   gg <- gg+ ggplot2::geom_segment(aes(x = fit_range[1], y = fit[1,1]+fit[1,2], xend = fit_range[2], yend = fit[1,1]+fit[1,2]) , linetype="solid", color = "red")
-#'   gg <- gg+theme_bw()
-#'   s<- sprintf("%.6f",fit[1,1])
-#'   err<- sprintf("%.6f",fit[1,2])
-#'
-#'
-#'   pander(paste0("  fit: $m_{eff}=",s,"\\pm",err,"$"))
-#'   #plot(gg)
-#'   return(gg)
-#' }
 
 ################################################################################
 ################################################################################
 #' plot a plateaux
-#' @param d data frame
-#' @param  T total time extend of the plot (T/2)
-myggplot<-function(color=TRUE,shape=TRUE,fill=TRUE){
+#' @param color bool
+#' @param  shape bool
+#' @param fill bool
+myggplot<-function(color=TRUE,shape=TRUE,fill=TRUE, repeat_color=1){
 
   gg <- ggplot2::ggplot()+ ggplot2::theme_bw()
-  if(color) gg <- gg +scale_color_manual(values=c("#404040","#4863A0","#C04000",
-                                                  "#228B22","#8B008B","#00CCFF",
-                                                  "#996600","#999999","#FFCC33",
-                                                  "#FF6600","#6633FF","#9966FF",
-                                                  "#006666","#FFCCFF",1:50))
+  colorlist<- c("#404040","#4863A0","#C04000",
+                "#228B22","#8B008B","#00CCFF",
+                "#996600","#999999","#FFCC33",
+                "#FF6600","#6633FF","#9966FF",
+                "#006666","#FFCCFF")
+  colorlist<-rep(colorlist,each=repeat_color)
+
+  if(color) gg <- gg +scale_color_manual(values=colorlist)
   #ggplot2::scale_color_manual(values=seq(1,50))
-  if(fill) gg <- gg + ggplot2::scale_fill_manual(values=c("#404040","#4863A0","#C04000",
-                                                          "#228B22","#8B008B","#00CCFF",
-                                                          "#996600","#999999","#FFCC33",
-                                                          "#FF6600","#6633FF","#9966FF",
-                                                          "#006666","#FFCCFF",1:50))
+  if(fill) gg <- gg + ggplot2::scale_fill_manual(values=colorlist)
   if(shape) gg <- gg + ggplot2::scale_shape_manual(
       values=c(0,1,2,4,5,6,7,8,11,15,16,17,18,21,22,23,24,25)
       )
@@ -293,14 +271,14 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
                    xrange=NULL, yrange=NULL,
                    output="AUTO", to_print=TRUE, save_pdf=NULL,
                    legend_position=c(0,1), legend_title=NULL, width=680, height=480,
-                   latex_engine="pdflatex"){
+                   latex_engine="pdflatex", to_webgl=FALSE){
   #gg<- gg+ ggplot2::theme_bw()
 
 
   gg<- gg+ ggplot2::labs(color=legend_title,
           fill=legend_title,
           shape=legend_title,
-          size=legend_title)
+          linewidth=legend_title)
 
   gg<- gg+ ggplot2::theme(
     panel.background     = ggplot2::element_rect(fill = "white", color = NA),
@@ -360,6 +338,8 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
       #fig<- fig %>% config(modeBarButtonsToAdd =
       #                       list("drawine",  "eraseshape" ) )
     # if(to_print) print(htmltools::tagList(fig%>%config(mathjax = "cdn")))
+    if(to_webgl)  fig<-fig %>% toWebGL()
+
     if(to_print){
       fig<-widgetframe::frameableWidget(fig%>%config(mathjax = "cdn",
                                                      displayModeBar = FALSE) )
@@ -377,11 +357,11 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
     if (stringr::str_detect(title,"\\$")){mytitle=title} else {mytitle=paste0("\\verb|",title,"|")}
 
     fig<-gg
-    # if(!(is.null(xrange) && is.null(yrange))) fig<-fig +ggplot2::coord_cartesian(xlim= xrange,ylim= yrange)
-    # else if(!is.null(xrange)) fig<-fig +ggplot2::coord_cartesian(xlim= xrange)
-    # else if(!is.null(yrange)) fig<-fig +ggplot2::coord_cartesian(ylim= yrange)
-    if(!is.null(xrange)) fig<-fig + xlim(xrange[1],xrange[2])
-    if(!is.null(yrange)) fig<-fig + ylim(yrange[1],yrange[2])
+    if( !is.null(xrange) && !is.null(yrange) ) fig<-fig +ggplot2::coord_cartesian(xlim= xrange,ylim= yrange)
+    else if(!is.null(xrange)) fig<-fig +ggplot2::coord_cartesian(xlim= xrange)
+    else if(!is.null(yrange)) fig<-fig +ggplot2::coord_cartesian(ylim= yrange)
+    # if(!is.null(xrange)) fig<-fig + xlim(xrange[1],xrange[2])
+    # if(!is.null(yrange)) fig<-fig + ylim(yrange[1],yrange[2])
 
     if(!title=="") fig<- fig +ggplot2::ggtitle(mytitle)
     if(!xlabel=="")fig<- fig +ggplot2::xlab(labelx)
@@ -587,7 +567,7 @@ print_fit_res<-function(label,fit,all_obs,l){
       str2 <- paste(str2,"  ",mean_print(fit[1,i],fit[1,i+1]) )
   }
   str2 <- paste(str2,"  $\\chi^2/dof=$",all_obs[l,4])
-  cat(str2,'\n\n')
+  cat(str2,'<br />')
 }
 
 #####################################################################
@@ -705,7 +685,7 @@ add_corr_to_df<-function(string=NULL,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
   mydf$tmax<-mydf$tmax+nudge
   if(print_res){
     fit<- get_fit_n(mt,n)
-    print_fit_res(label,fit,all_obs,l)
+    print_fit_res(mydf$label[1],fit,all_obs,l)
   }
 
   if(!is.null(df)) mydf <- rbind(df, mydf)
@@ -721,13 +701,13 @@ add_corr_to_df<-function(string=NULL,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
 #' @param  noribbon default FALSE
 #' @import ggplot2
 plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL,
-                              width=0.3, alpha=0.5, stroke=0.3){
+                              width=0.3, alpha=0.5, stroke=0.3, size_error=0.1){
   defaultW <- getOption("warn")
   if (is.null(gg)){
     gg <- myggplot()
   }
-  # l<-which(!stringr::str_detect(df$label,"\\$"))
-  # df$label[l]<-paste0("\\verb|",df$label[l],"|")
+  l<-which(!stringr::str_detect(df$label,"\\$"))
+  df$label[l]<-paste0("\\verb|",df$label[l],"|")
   df$label<- factor(df$label, levels=unique(df$label))
   gg <- gg + ggplot2::geom_point(data=df,mapping=aes(x=x, y=y,
                                       color=label, fill=label, shape=label),
@@ -740,7 +720,7 @@ plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL,
                                      color=label),
                                      # width = (xrange[2]-xrange[1])*width,
                                      width = width,
-                                     size=0.1, inherit.aes = TRUE)
+                                     linewidth = size_error, inherit.aes = TRUE)
   }
   if (!noribbon){
     dfp <- filter(df, xfit>=tmin, xfit<=tmax )
@@ -776,8 +756,6 @@ plot_fit<-function(basename,var, data_type=NULL, gg=NULL, noribbon=FALSE,
 
   if (is.null(gg)) gg<- myggplot()
   idy<-ncol(df)-2
-  if (is.null(data_type))
-    data_type<-as.factor(df[,idy+2])
 
   if (is.null(id_color))
     color_type<-as.factor(df[,idy+2])
@@ -789,6 +767,10 @@ plot_fit<-function(basename,var, data_type=NULL, gg=NULL, noribbon=FALSE,
   else
     shape_type<-as.factor(df[,id_shape])
 
+  if (!is.null(data_type)){
+    color_type<-data_type
+    shape_type<-data_type
+  }
 
     gg<-gg+  geom_point(data=df,
                            mapping=aes(x=df[,1] , y=df[,idy],
