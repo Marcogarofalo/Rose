@@ -59,7 +59,7 @@ get_block_n<- function(df,n){
 
 
 get_block<-function(string=NULL,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
-                         nudge=0.0, print_res=TRUE , rename=NULL, reshape=TRUE,
+                         nudge=0.0, print_res=TRUE , rename=NULL,
                         logx=0, ix=1, iy=2, ierr=3, ifit=4, ierrfit=5, iplateau=1){
   # string=sprintf("\\b%s\\b",string)# need to put the delimiters on the word to grep
   #label<-paste0(gsub('\\\\b','',string) )
@@ -112,7 +112,6 @@ get_block<-function(string=NULL,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
   mydf$x <- mydf$x +nudge
   tmin<-tmin+nudge
   tmax<-tmax+nudge
-
   mydf$xfit<-mydf$x
   mydf$tmin<-tmin
   mydf$tmax<-tmax

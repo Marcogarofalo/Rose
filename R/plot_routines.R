@@ -567,7 +567,7 @@ print_fit_res<-function(label,fit,all_obs,l){
       str2 <- paste(str2,"  ",mean_print(fit[1,i],fit[1,i+1]) )
   }
   str2 <- paste(str2,"  $\\chi^2/dof=$",all_obs[l,4])
-  cat(str2,'<br />')
+  cat(str2,'\n\n')
 }
 
 #####################################################################
