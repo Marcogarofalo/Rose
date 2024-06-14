@@ -750,7 +750,10 @@ make_table_fit_result<- function(df){
 #' plot the result of a fit
 plot_fit<-function(basename,var, data_type=NULL, gg=NULL, noribbon=FALSE,
                    labelfit="fit", width=0.02, size=1,
-                   id_color=NULL, id_shape=NULL){
+                   id_color=NULL, id_shape=NULL,
+                   single_name_for_fit = NULL,
+                   nolabel_for_fit = FALSE
+                   ){
   filed<-paste0(basename,"_fit_data.txt")
   df<- read.table(filed, header=FALSE, fill=TRUE)
 
@@ -767,9 +770,19 @@ plot_fit<-function(basename,var, data_type=NULL, gg=NULL, noribbon=FALSE,
   else
     shape_type<-as.factor(df[,id_shape])
 
+  lastr<-nrow(df)
+  Nfits<-c(df[1,idy+2]:df[lastr,idy+2])
   if (!is.null(data_type)){
-    color_type<-data_type
-    shape_type<-data_type
+    if (length(data_type)==1){
+      color_type<-data_type
+      shape_type<-data_type
+    }
+    else {
+      N<-length(which(df[,idy+2]==0))
+
+      color_type<-rep(data_type,each=N)
+      shape_type<-rep(data_type,each=N)
+    }
   }
 
     gg<-gg+  geom_point(data=df,
@@ -777,7 +790,7 @@ plot_fit<-function(basename,var, data_type=NULL, gg=NULL, noribbon=FALSE,
                                        color=color_type,
                                        shape=shape_type,
                                        fill=color_type  )
-                           ,width=width,size=size)
+                           ,size=size)
 
    gg<-gg+  geom_errorbar(data=df,
                            mapping=aes(x=df[,1] , y=df[,idy],
@@ -790,15 +803,21 @@ plot_fit<-function(basename,var, data_type=NULL, gg=NULL, noribbon=FALSE,
 
 
   datalist = list()
-  lastr<-nrow(df)
   mycol<-unique(paste0(labelfit,color_type))
-  Nfits<-c(df[1,idy+2]:df[lastr,idy+2])
   if (length(mycol)!=length(Nfits) )
-    mycol<-paste0("fit-",Nfits)
+    mycol<-paste0(labelfit,Nfits)
+
+  if (!is.null(single_name_for_fit))
+    mycol<-rep(single_name_for_fit,length(Nfits))
+
+  if (nolabel_for_fit){
+    mycol<-unique(paste0(color_type))
+    if (length(mycol)!=length(Nfits) )
+      mycol<-rep(color_type,length(Nfits))
+  }
 
   if(!noribbon){
   for (n in Nfits){
-
     file=sprintf("%s_fit_out_n%d_%s.txt",basename,n,var)
     #browser()
     n1<-n+1
@@ -808,17 +827,17 @@ plot_fit<-function(basename,var, data_type=NULL, gg=NULL, noribbon=FALSE,
                          mapping=aes_string(x=datalist[[n1]][,1] ,
                                             ymin=datalist[[n1]][,2]-datalist[[n1]][,3],
                                             ymax=datalist[[n1]][,2]+datalist[[n1]][,3],
-                                            fill=as.factor(mycol),
-                                            color=as.factor(mycol),
-                                            shape=as.factor(mycol)
+                                            fill=as.factor(mycol[n1]),
+                                            color=as.factor(mycol[n1]),
+                                            shape=as.factor(mycol[n1])
                                             ),
                          alpha=0.5 )
     gg<-gg + geom_line(
                        mapping=aes_string(x=datalist[[n1]][,1] ,
                                           y=datalist[[n1]][,2],
-                                          fill=as.factor(mycol),
-                                          color=as.factor(mycol),
-                                          shape=as.factor(mycol)  )
+                                          fill=as.factor(mycol[n1]),
+                                          color=as.factor(mycol[n1]),
+                                          shape=as.factor(mycol[n1])  )
     )
   }
   }
