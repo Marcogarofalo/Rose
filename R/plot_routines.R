@@ -284,7 +284,7 @@ myplotly<-function(gg, title="",xlabel="", ylabel="",
     panel.background     = ggplot2::element_rect(fill = "white", color = NA),
 
     legend.key           = element_rect(fill = NA, color = NA),
-    legend.background    = element_rect(fill = "#ffffff80", color = NA, size = 1),
+    legend.background    = element_rect(fill = "#ffffff80", color = NA, linewidth = 1),
     legend.justification = c(1, 1),
 
     legend.box.margin    = margin(1, 0, 0, 0),
