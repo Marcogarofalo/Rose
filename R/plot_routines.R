@@ -701,7 +701,8 @@ add_corr_to_df<-function(string=NULL,all_obs,mt ,df=NULL ,log=FALSE,number=NULL,
 #' @param  noribbon default FALSE
 #' @import ggplot2
 plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL,
-                              width=0.3, alpha=0.5, stroke=0.3, size_error=0.1){
+                              width=0.3, alpha=0.5, stroke=0.3, size_error=0.1,
+                              extra_length_plateau=0.4){
   defaultW <- getOption("warn")
   if (is.null(gg)){
     gg <- myggplot()
@@ -724,10 +725,15 @@ plot_df_corr_ggplot<-function(df, noerror=FALSE, noribbon=FALSE , gg=NULL,
   }
   if (!noribbon){
     dfp <- filter(df, xfit>=tmin, xfit<=tmax )
+    df1 <- filter(df, xfit==tmin, xfit==tmax )
+    df1<- rbind(df1,df1)
+    df1$xfit <- df1$xfit + c(-extra_length_plateau,+extra_length_plateau)
+    dfp <- rbind(dfp,df1)
     gg <- gg +ggplot2::geom_ribbon( data=dfp,
                                     mapping=aes(x=xfit, ymin=fit-errfit,ymax=fit+errfit ,
                                                 color=label, fill=label),
                                     alpha=alpha , inherit.aes = TRUE, show.legend = FALSE)
+
   }
   gg<-gg+guides(fill="none", shape="none")
 
@@ -752,7 +758,8 @@ plot_fit<-function(basename,var, data_type=NULL, gg=NULL, noribbon=FALSE,
                    labelfit="fit", width=0.02, size=1,
                    id_color=NULL, id_shape=NULL,
                    single_name_for_fit = NULL,
-                   nolabel_for_fit = FALSE
+                   nolabel_for_fit = FALSE,
+                   nudge = 0
                    ){
   filed<-paste0(basename,"_fit_data.txt")
   df<- read.table(filed, header=FALSE, fill=TRUE)
@@ -786,14 +793,14 @@ plot_fit<-function(basename,var, data_type=NULL, gg=NULL, noribbon=FALSE,
   }
 
     gg<-gg+  geom_point(data=df,
-                           mapping=aes(x=df[,1] , y=df[,idy],
+                           mapping=aes(x=df[,1]+nudge , y=df[,idy],
                                        color=color_type,
                                        shape=shape_type,
                                        fill=color_type  )
                            ,size=size)
 
    gg<-gg+  geom_errorbar(data=df,
-                           mapping=aes(x=df[,1] , y=df[,idy],
+                           mapping=aes(x=df[,1]+nudge , y=df[,idy],
                                        ymin=df[,idy]-df[,idy+1],
                                        ymax=df[,idy]+df[,idy+1],
                                        color=color_type,
@@ -824,7 +831,7 @@ plot_fit<-function(basename,var, data_type=NULL, gg=NULL, noribbon=FALSE,
     datalist[[n1]]<- read.table(file, header=FALSE, fill=TRUE,
                                 col.names=c(paste0("x",n),paste0("fit",n),paste0("fiterr",n)))
     gg<-gg + geom_ribbon(
-                         mapping=aes_string(x=datalist[[n1]][,1] ,
+                         mapping=aes_string(x=datalist[[n1]][,1]+nudge ,
                                             ymin=datalist[[n1]][,2]-datalist[[n1]][,3],
                                             ymax=datalist[[n1]][,2]+datalist[[n1]][,3],
                                             fill=as.factor(mycol[n1]),
@@ -833,7 +840,7 @@ plot_fit<-function(basename,var, data_type=NULL, gg=NULL, noribbon=FALSE,
                                             ),
                          alpha=0.5 )
     gg<-gg + geom_line(
-                       mapping=aes_string(x=datalist[[n1]][,1] ,
+                       mapping=aes_string(x=datalist[[n1]][,1]+nudge ,
                                           y=datalist[[n1]][,2],
                                           fill=as.factor(mycol[n1]),
                                           color=as.factor(mycol[n1]),
