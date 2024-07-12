@@ -222,6 +222,33 @@ get_full_res<-function(string,all_obs,mt,number=NULL){
   return(fit)
 }
 
+#' print result of a fit
+#' @param string of the string to find
+#' @param  all_obs the outcome of Rose::get_all_corr()
+#' @param  mt logscale default "no"
+#' @import ggplot2
+print_full_res <- function(string,  all_obs, mt, number=NULL) {
+
+  label<-paste0(string )
+  if (is.null(number)){
+    n<- which(all_obs[,"corr"]==string)
+    if (length(n)!=1)stop("correlator ",string,"not found")
+  }
+  else {
+    n=number
+  }
+  # d<- get_block_n(mt,n)
+  fit<- get_fit_n(mt,n)
+
+  str2 <- paste(label, "=")
+  for (i in c(1:(length(fit[1, ]) / 2)) * 2 - 1) {
+    if (!is.na(fit[1, i])) {
+      str2 <- paste(str2, "  ", mean_print(fit[1, i], fit[1, i + 1]))
+    }
+  }
+  str2 <- paste(str2, "  $\\chi^2/dof=$", all_obs[n, 4])
+  cat(str2, "\n\n")
+}
 #' read the output of a fit namefit_fit_P.dat
 #'
 #' @param file name of the file
