@@ -839,12 +839,12 @@ plot_df_corr_ggplot <- function(df, noerror = FALSE, noribbon = FALSE, gg = NULL
 
 #' create a table with the fit result
 #' @param df data.frame created with Rose::read_fit_P_file("filename")
-make_table_fit_result <- function(df, namefit=NULL) {
+make_table_fit_result <- function(df, namefit = NULL) {
   df1 <- data.frame("P" = df$P[, 1], "value" = mapply(mean_print, df$P[, 2], df$P[, 3]))
   # cap<-paste0("$\\chi^2/dof=$",df$chi2)
   # kable(df1, caption=cap)
-  if (!is.null(namefit)){
-    cat(namefit,"\n")
+  if (!is.null(namefit)) {
+    cat(namefit, "\n")
   }
   cat("$\\chi^2/dof=$ ", df$chi2, "\n\n")
   kable(df1)
@@ -852,6 +852,7 @@ make_table_fit_result <- function(df, namefit=NULL) {
 
 #' plot the result of a fit
 plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALSE,
+                     noline = FALSE,
                      labelfit = "fit", width = 0.02, size = 1,
                      id_color = NULL, id_shape = NULL,
                      single_name_for_fit = NULL,
@@ -931,7 +932,7 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
     }
   }
 
-  if (!noribbon) {
+  if ((!noribbon) | (!noline)) {
     for (n in Nfits) {
       file <- sprintf("%s_fit_out_n%d_%s.txt", basename, n, var)
       # browser()
@@ -940,26 +941,30 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
         header = FALSE, fill = TRUE,
         col.names = c(paste0("x", n), paste0("fit", n), paste0("fiterr", n))
       )
-      gg <- gg + geom_ribbon(
-        mapping = aes_string(
-          x = datalist[[n1]][, 1] + nudge,
-          ymin = datalist[[n1]][, 2] - datalist[[n1]][, 3],
-          ymax = datalist[[n1]][, 2] + datalist[[n1]][, 3],
-          fill = as.factor(mycol[n1]),
-          color = as.factor(mycol[n1]),
-          shape = as.factor(mycol[n1])
-        ),
-        alpha = 0.5
-      )
-      gg <- gg + geom_line(
-        mapping = aes_string(
-          x = datalist[[n1]][, 1] + nudge,
-          y = datalist[[n1]][, 2],
-          fill = as.factor(mycol[n1]),
-          color = as.factor(mycol[n1]),
-          shape = as.factor(mycol[n1])
+      if (!noribbon) {
+        gg <- gg + geom_ribbon(
+          mapping = aes_string(
+            x = datalist[[n1]][, 1] + nudge,
+            ymin = datalist[[n1]][, 2] - datalist[[n1]][, 3],
+            ymax = datalist[[n1]][, 2] + datalist[[n1]][, 3],
+            fill = as.factor(mycol[n1]),
+            color = as.factor(mycol[n1]),
+            shape = as.factor(mycol[n1])
+          ),
+          alpha = 0.5
         )
-      )
+      }
+      if (!noline) {
+        gg <- gg + geom_line(
+          mapping = aes_string(
+            x = datalist[[n1]][, 1] + nudge,
+            y = datalist[[n1]][, 2],
+            fill = as.factor(mycol[n1]),
+            color = as.factor(mycol[n1]),
+            shape = as.factor(mycol[n1])
+          )
+        )
+      }
     }
   }
   return(gg)
