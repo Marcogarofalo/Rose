@@ -33,7 +33,9 @@ myggplot <- function(color = TRUE, shape = TRUE, fill = TRUE, repeat_color = 1) 
     "#228B22", "#8B008B", "#00CCFF",
     "#996600", "#999999", "#FFCC33",
     "#FF6600", "#6633FF", "#9966FF",
-    "#006666", "#FFCCFF"
+    "#006666", "#FFCCFF", "#fc0303",
+    "#03fc07", "#0335fc", "#fc03e3",
+    "#d7fc03"
   )
   colorlist <- rep(colorlist, each = repeat_color)
 
