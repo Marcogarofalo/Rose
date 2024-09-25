@@ -854,6 +854,7 @@ make_table_fit_result <- function(df, namefit = NULL) {
 
 #' plot the result of a fit
 plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALSE,
+                     id_x = 1,
                      noline = FALSE,
                      labelfit = "fit", width = 0.02, size = 1,
                      id_color = NULL, id_shape = NULL,
@@ -887,15 +888,28 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
     } else {
       N <- length(which(df[, idy + 2] == 0))
 
-      color_type <- rep(data_type, each = N)
-      shape_type <- rep(data_type, each = N)
+      # color_type <- rep(data_type, each = N)
+      # shape_type <- rep(data_type, each = N)
+
+      color_type <- df[, idy + 2]
+      shape_type <- df[, idy + 2]
+
+      count <- 1
+      for (n in c(1:length(df[, idy + 2]))) {
+        if (n != 1) {
+          if (df[n, idy + 2] != df[n - 1, idy + 2]) {
+            count <- count + 1
+          }
+        }
+        color_type[n] <- data_type[count]
+        shape_type[n] <- data_type[count]
+      }
     }
   }
-
   gg <- gg + geom_point(
     data = df,
     mapping = aes(
-      x = df[, 1] + nudge, y = df[, idy],
+      x = df[, id_x] + nudge, y = df[, idy],
       color = color_type,
       shape = shape_type,
       fill = color_type
@@ -906,7 +920,7 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
   gg <- gg + geom_errorbar(
     data = df,
     mapping = aes(
-      x = df[, 1] + nudge, y = df[, idy],
+      x = df[, id_x] + nudge, y = df[, idy],
       ymin = df[, idy] - df[, idy + 1],
       ymax = df[, idy] + df[, idy + 1],
       color = color_type,
@@ -919,7 +933,21 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
 
   datalist <- list()
   mycol <- unique(paste0(labelfit, color_type))
+  if (!is.null(data_type)) {
+    mycol <- Nfits
+    count <- 1
+    mycol[1] <- paste0(labelfit, data_type[1])
+    for (n in c(1:length(df[, idy + 2]))) {
+      if (n != 1) {
+        if (df[n, idy + 2] != df[n - 1, idy + 2]) {
+          count <- count + 1
+          mycol[count] <- paste0(labelfit, data_type[count])
+        }
+      }
+    }
+  }
   if (length(mycol) != length(Nfits)) {
+
     mycol <- paste0(labelfit, Nfits)
   }
 
@@ -927,12 +955,12 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
     mycol <- rep(single_name_for_fit, length(Nfits))
   }
 
-  if (nolabel_for_fit) {
-    mycol <- unique(paste0(color_type))
-    if (length(mycol) != length(Nfits)) {
-      mycol <- rep(color_type, length(Nfits))
-    }
-  }
+  # if (nolabel_for_fit) {
+  #   mycol <- unique(paste0(color_type))
+  #   if (length(mycol) != length(Nfits)) {
+  #     mycol <- rep(color_type, length(Nfits))
+  #   }
+  # }
 
   if ((!noribbon) | (!noline)) {
     for (n in Nfits) {
@@ -940,8 +968,8 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
       # browser()
       n1 <- n + 1
       datalist[[n1]] <- read.table(file,
-        header = FALSE, fill = TRUE,
-        col.names = c(paste0("x", n), paste0("fit", n), paste0("fiterr", n))
+                                   header = FALSE, fill = TRUE,
+                                   col.names = c(paste0("x", n), paste0("fit", n), paste0("fiterr", n))
       )
       if (!noribbon) {
         gg <- gg + geom_ribbon(
@@ -971,3 +999,4 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
   }
   return(gg)
 }
+
