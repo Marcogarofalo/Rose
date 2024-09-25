@@ -21,6 +21,7 @@
 #' @examples mean_print(1.32,0.11)
 
 mean_print<-function(ave,err,digit=2,mean_exp=TRUE){
+  stopifnot(digit>0)
   if( !is.numeric(ave) | is.na(ave)  ){
     s=sprintf("NA")
     return(s)
@@ -72,11 +73,15 @@ mean_print<-function(ave,err,digit=2,mean_exp=TRUE){
       #format=sprintf("%%.%df(%%.%.df)e%%+-d",a-e+digit-1,a-e+digit-1)
 
       e1<-(log10(we))
+      cat("e1=",e1,"\n")
 
       if (e1<0 ){
         e1<-as.integer(e1)
-        we<- we/ 10^(e1-2)
+        we<- we/ 10^(e1-digit)
+        print(we*10^(digit-2))
+        print(a-e+digit-1)
         format=sprintf("%%.%df(%%.0f)e%%+-d",a-e+digit-1)
+        print(format)
         s=sprintf(format,wm,we,a)
       }
       else if (e1<1) {
@@ -85,7 +90,9 @@ mean_print<-function(ave,err,digit=2,mean_exp=TRUE){
       }
       else {
         dig_error=as.integer(e1)
-        format=sprintf("%%.%df(%%.%df)e%%+-d",digit-2,digit-2)
+        dig_mean<-(digit-2)
+        if (dig_mean<0) dig_mean<-0
+        format=sprintf("%%.%df(%%.%df)e%%+-d",dig_mean,dig_mean)
         s=sprintf(format,wm,we,a)
       }
 
@@ -106,3 +113,4 @@ mean_print<-function(ave,err,digit=2,mean_exp=TRUE){
   return(s)
 
 }
+mean_print(1.86876e-10,2.876876e-11, digit = 3)
