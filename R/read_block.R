@@ -256,9 +256,11 @@ read_fit_P_file<-function(file){
   df<-read.table(file, fill=TRUE, row.names=NULL, col.names=c(1:40))
   l<-list()
   l$npar<-df[1,2]
-  l$chi2<-df[2,2]
+  l$chi2dof<-df[2,2]
   l$P<- df[c(3:(3+l$npar-1)), c(1,2,3)]
   l$C<- df[c((3+l$npar):(3+l$npar*2-1)),  c(1:l$npar) ]
+  l$dof<- df[3+l$npar*2,2]
+  l$ndata<- df[3+l$npar*2+1,2]
   return(l)
 }
 
