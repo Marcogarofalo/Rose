@@ -906,29 +906,6 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
       }
     }
   }
-  gg <- gg + geom_point(
-    data = df,
-    mapping = aes(
-      x = df[, id_x] + nudge, y = df[, idy],
-      color = color_type,
-      shape = shape_type,
-      fill = color_type
-    ),
-    size = size
-  )
-
-  gg <- gg + geom_errorbar(
-    data = df,
-    mapping = aes(
-      x = df[, id_x] + nudge, y = df[, idy],
-      ymin = df[, idy] - df[, idy + 1],
-      ymax = df[, idy] + df[, idy + 1],
-      color = color_type,
-      shape = shape_type,
-      fill = color_type
-    ),
-    width = width, size = size
-  )
 
 
   datalist <- list()
@@ -997,6 +974,31 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
       }
     }
   }
+
+  gg <- gg + geom_point(
+    data = df,
+    mapping = aes(
+      x = df[, id_x] + nudge, y = df[, idy],
+      color = color_type,
+      shape = shape_type,
+      fill = color_type
+    ),
+    size = size
+  )
+
+  gg <- gg + geom_errorbar(
+    data = df,
+    mapping = aes(
+      x = df[, id_x] + nudge, y = df[, idy],
+      ymin = df[, idy] - df[, idy + 1],
+      ymax = df[, idy] + df[, idy + 1],
+      color = color_type,
+      shape = shape_type,
+      fill = color_type
+    ),
+    width = width, size = size
+  )
+
   return(gg)
 }
 
