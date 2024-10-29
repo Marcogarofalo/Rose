@@ -109,3 +109,4 @@ mean_print<-function(ave,err,digit=2,mean_exp=TRUE){
   return(s)
 
 }
+erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
