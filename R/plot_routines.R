@@ -860,7 +860,7 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
                      id_color = NULL, id_shape = NULL,
                      single_name_for_fit = NULL,
                      nolabel_for_fit = FALSE,
-                     nudge = 0) {
+                     nudge = 0, alpha_line=1) {
   filed <- paste0(basename, "_fit_data.txt")
   df <- read.table(filed, header = FALSE, fill = TRUE)
 
@@ -969,7 +969,7 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
             fill = as.factor(mycol[n1]),
             color = as.factor(mycol[n1]),
             shape = as.factor(mycol[n1])
-          )
+          ), alpha=alpha_line
         )
       }
     }
