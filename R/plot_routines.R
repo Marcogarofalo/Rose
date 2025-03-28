@@ -43,8 +43,10 @@ myggplot <- function(color = TRUE, shape = TRUE, fill = TRUE, repeat_color = 1) 
   # ggplot2::scale_color_manual(values=seq(1,50))
   if (fill) gg <- gg + ggplot2::scale_fill_manual(values = colorlist)
   if (shape) {
+    val_list = c(0, 1, 2, 4, 5, 6, 7, 8, 11, 15, 16, 17, 18, 21, 22, 23, 24, 25)
+    val_list = rep(val_list, each = repeat_color)
     gg <- gg + ggplot2::scale_shape_manual(
-      values = c(0, 1, 2, 4, 5, 6, 7, 8, 11, 15, 16, 17, 18, 21, 22, 23, 24, 25)
+      values = val_list
     )
   }
   return(gg)
@@ -737,7 +739,7 @@ add_corr_to_df <- function(string = NULL, all_obs, mt, df = NULL, log = FALSE, n
   } else {
     mydf <- data.frame(
       "x" = d[, 1], "y" = d[, 2], "err" = d[, 3],
-      "xfit" = d[, 4], "fit" = d[, 5], "errfit" = d[, 6]
+      "xfit" = d[, 1], "fit" = d[, 4], "errfit" = d[, 5]
     )
   }
 
@@ -860,7 +862,8 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
                      id_color = NULL, id_shape = NULL,
                      single_name_for_fit = NULL,
                      nolabel_for_fit = FALSE,
-                     nudge = 0, alpha_line=1) {
+                     nudge = 0, alpha_line=1, alpha_ribbon=0.5,
+                     stroke =1) {
   filed <- paste0(basename, "_fit_data.txt")
   df <- read.table(filed, header = FALSE, fill = TRUE)
 
@@ -958,7 +961,7 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
             color = as.factor(mycol[n1]),
             shape = as.factor(mycol[n1])
           ),
-          alpha = 0.5
+          alpha = alpha_ribbon
         )
       }
       if (!noline) {
@@ -983,7 +986,7 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
       shape = shape_type,
       fill = color_type
     ),
-    size = size
+    size = size, stroke = stroke
   )
 
   gg <- gg + geom_errorbar(
