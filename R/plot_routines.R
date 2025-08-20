@@ -708,7 +708,8 @@ plot_corr <- function(string, all_obs, mt, L, T, gg, log = "no", number = NULL,
 #' default TRUE
 #' @export
 add_corr_to_df <- function(string = NULL, all_obs, mt, df = NULL, log = FALSE, number = NULL,
-                           nudge = 0.0, print_res = TRUE, rename = NULL, reshape = TRUE, logx = 0) {
+                           nudge = 0.0, print_res = TRUE, rename = NULL, reshape = TRUE, logx = 0,
+                           ix=1, iy=2, idy=3, ixfit=1, ifit=4, idfit=5) {
   # string=sprintf("\\b%s\\b",string)# need to put the delimiters on the word to grep
   # label<-paste0(gsub('\\\\b','',string) )
   if (is.null(number)) {
@@ -737,9 +738,10 @@ add_corr_to_df <- function(string = NULL, all_obs, mt, df = NULL, log = FALSE, n
   if (reshape) {
     mydf <- reshape_df_analysis_to_ggplot(d)
   } else {
+    # default: ix=1, iy=2, idy=3, ixfit=1, ifit=4, idfit=5
     mydf <- data.frame(
-      "x" = d[, 1], "y" = d[, 2], "err" = d[, 3],
-      "xfit" = d[, 1], "fit" = d[, 4], "errfit" = d[, 5]
+      "x" = d[, ix], "y" = d[, iy], "err" = d[, idy],
+      "xfit" = d[, ixfit], "fit" = d[, ifit], "errfit" = d[, idfit]
     )
   }
 
@@ -863,9 +865,14 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
                      single_name_for_fit = NULL,
                      nolabel_for_fit = FALSE,
                      nudge = 0, alpha_line=1, alpha_ribbon=0.5,
-                     stroke =1) {
+                     stroke =1,
+                     filter_data=NULL) {
   filed <- paste0(basename, "_fit_data.txt")
   df <- read.table(filed, header = FALSE, fill = TRUE)
+  if (!is.null(filter_data)){
+    last<-ncol(df)
+    df<- df[df[,last] %in% filter_data, ]
+  }
 
   if (is.null(gg)) gg <- myggplot()
   idy <- ncol(df) - 2
