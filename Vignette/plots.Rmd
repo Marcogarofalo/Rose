@@ -9,11 +9,12 @@ output:
     toc: true
 ---
 
-```{r setup, include=FALSE}
+```{r setup include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library("ggplot2")
 library("plotly")
 library("Rose")
+library(knitr)
 require(tikzDevice)
 ```
 
@@ -64,7 +65,7 @@ myplotly(ggplot())
 ```
 
 
-```{r eval=FALSE}
+```{r, eval=FALSE}
 {r ,include=FALSE}
 df <- data.frame(x = 1:5, y = 1:5)    
 f1 <- function(df) {
@@ -97,7 +98,7 @@ df<-add_corr_to_df(string = "E1_0",all_obs=all_obs,mt=mt,df = NULL,
 df<-add_corr_to_df("E1_1",all_obs,mt,df)
 df<- add_corr_to_df("E3_0_vev",all_obs,mt,df, print_res = TRUE)
 fit<-get_full_res(string="E3_0_vev",all_obs,mt,number=NULL)
-fit
+print(fit)
 n<- which(all_obs[,"corr"]=="E3_0_vev")
 all_obs[n,"chi2.dof"]
 
@@ -114,7 +115,98 @@ end_time <- Sys.time()
 end_time - start_time
 ``` 
 
+# plotting fits 
 
+```{r, results='asis', warning=FALSE}
+source("../R/plot_routines.R")
+################################################################################
+
+
+################################################################################
+
+
+
+dir<-"./fit_all/"
+namefit<-paste0(dir,"amu_bound_a2_a4_GS_L_Mpi")
+file<-paste0(namefit,"_fit_P.dat")
+fit<- read_fit_P_file(file)
+cat("\n\n")
+dt<-make_table_fit_result(fit)
+print(dt)
+gg<-myggplot()
+gg<-plot_fit(basename = namefit, var="afm",data_type = c("TM","OS"), width=1e-4, gg=gg
+                 ,               id_color = 5, id_shape = 5,
+              # , labelfit = ""
+                # ,single_name_for_fit ="fit"
+             # , nolabel_for_fit = TRUE
+             ,noline=TRUE
+               )
+fig<-myplotly(gg, "","$a^2[fm]$",
+            paste0("$a_\\mu$"), to_print = TRUE)
+gg<-myggplot()
+
+gg<-plot_fit(basename = namefit, var="afm",data_type = c("TM","OS"), width=1e-4, gg=gg
+                 ,               id_color = 5, id_shape = 5,
+              , labelfit = ""
+                # ,single_name_for_fit ="fit"
+             # , nolabel_for_fit = TRUE
+             ,noline=TRUE
+               )
+fig<-myplotly(gg, "","$a^2[fm]$",
+            paste0("$a_\\mu$"), to_print = TRUE)
+gg<-myggplot()
+
+gg<-plot_fit(basename = namefit, var="afm",data_type = c("TM","OS"), width=1e-4, gg=gg
+                 ,               id_color = 5, id_shape = 5,
+              #, labelfit = ""
+                 ,single_name_for_fit ="fit"
+             # , nolabel_for_fit = TRUE
+             ,noline=TRUE
+               )
+fig<-myplotly(gg, "","$a^2[fm]$",
+            paste0("$a_\\mu$"), to_print = TRUE)
+gg<-myggplot()
+
+gg<-plot_fit(basename = namefit, var="afm",data_type = c("TM","OS"), width=1e-4, gg=gg
+                 ,               id_color = 5, id_shape = 5,
+              , labelfit = "zap-"
+                # ,single_name_for_fit ="fit"
+             # , nolabel_for_fit = TRUE
+             ,noline=TRUE
+               )
+
+
+fig<-myplotly(gg, "","$a^2[fm]$",
+            paste0("$a_\\mu$"), to_print = TRUE)
+```
+
+
+```{r,results='asis'}
+
+
+dir <- "/home/garofalo/analysis/g-2_new_stat/fit_all/"
+namefit <- paste0(dir, "afpi_cov")
+file <- paste0(namefit, "_fit_P.dat")
+fit <- read_fit_P_file(file)
+cat("\n\n")
+dt <- make_table_fit_result(fit)
+print(dt)
+gg <- myggplot(repeat_color = 1)
+gg <- plot_fit(
+  basename = namefit,
+  var = "xi",
+  id_x = 5,
+  data_type = c("A", "B", "C", "D", "E", "B", "C", "D"),
+  width = 1e-4,
+  gg = gg, ,
+  labelfit = "",
+    # , single_name_for_fit = "fit"
+   #, nolabel_for_fit = TRUE
+  , noline = TRUE
+)
+gg <- gg + geom_vline(xintercept = 0.00678723)
+fig <- myplotly(gg, "", "$\\xi$", "$af_\\pi$", to_print = TRUE)
+```
 
 # Colors
 

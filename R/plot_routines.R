@@ -43,8 +43,8 @@ myggplot <- function(color = TRUE, shape = TRUE, fill = TRUE, repeat_color = 1) 
   # ggplot2::scale_color_manual(values=seq(1,50))
   if (fill) gg <- gg + ggplot2::scale_fill_manual(values = colorlist)
   if (shape) {
-    val_list = c(0, 1, 2, 4, 5, 6, 7, 8, 11, 15, 16, 17, 18, 21, 22, 23, 24, 25)
-    val_list = rep(val_list, each = repeat_color)
+    val_list <- c(0, 1, 2, 4, 5, 6, 7, 8, 11, 15, 16, 17, 18, 21, 22, 23, 24, 25)
+    val_list <- rep(val_list, each = repeat_color)
     gg <- gg + ggplot2::scale_shape_manual(
       values = val_list
     )
@@ -295,7 +295,8 @@ myplotly <- function(gg, title = "", xlabel = "", ylabel = "",
                      xrange = NULL, yrange = NULL,
                      output = "AUTO", to_print = TRUE, save_pdf = NULL,
                      legend_position = c(0, 1), legend_title = NULL, width = 680, height = 480,
-                     latex_engine = "pdflatex", to_webgl = FALSE, restyle = TRUE) {
+                     latex_engine = "pdflatex", to_webgl = FALSE, restyle = TRUE,
+                     clean_pdf = TRUE) {
   # gg<- gg+ ggplot2::theme_bw()
 
   if (restyle) {
@@ -434,7 +435,10 @@ myplotly <- function(gg, title = "", xlabel = "", ylabel = "",
       )
       plot(fig)
       dev.off()
-      tools::texi2dvi(paste0(save_pdf, ".tex"), texi2dvi = latex_engine, pdf = TRUE)
+      tools::texi2dvi(paste0(save_pdf, ".tex"),
+        texi2dvi = latex_engine, pdf = TRUE,
+        clean = clean_pdf
+      )
     }
   } else {
     print("not output selected")
@@ -644,8 +648,8 @@ many_fit_ggplot <- function(d, fit_par, fit_range, T, logscale = "no", g, mylabe
 print_fit_res <- function(label, fit, all_obs, l) {
   str2 <- paste(label, "=")
   for (i in c(1:(length(fit[1, ]) / 2)) * 2 - 1) {
-    if (!is.na(fit[1, i]) & !is.na(fit[1, i+1])) {
-      str2 <- paste(str2, "  ", mean_print(fit[1, i], fit[1, i + 1]),", ")
+    if (!is.na(fit[1, i]) & !is.na(fit[1, i + 1])) {
+      str2 <- paste(str2, "  ", mean_print(fit[1, i], fit[1, i + 1]), ", ")
     }
   }
   str2 <- paste(str2, "  $\\chi^2/dof=$", all_obs[l, 4])
@@ -709,7 +713,7 @@ plot_corr <- function(string, all_obs, mt, L, T, gg, log = "no", number = NULL,
 #' @export
 add_corr_to_df <- function(string = NULL, all_obs, mt, df = NULL, log = FALSE, number = NULL,
                            nudge = 0.0, print_res = TRUE, rename = NULL, reshape = TRUE, logx = 0,
-                           ix=1, iy=2, idy=3, ixfit=1, ifit=4, idfit=5) {
+                           ix = 1, iy = 2, idy = 3, ixfit = 1, ifit = 4, idfit = 5) {
   # string=sprintf("\\b%s\\b",string)# need to put the delimiters on the word to grep
   # label<-paste0(gsub('\\\\b','',string) )
   if (is.null(number)) {
@@ -864,14 +868,14 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
                      id_color = NULL, id_shape = NULL,
                      single_name_for_fit = NULL,
                      nolabel_for_fit = FALSE,
-                     nudge = 0, alpha_line=1, alpha_ribbon=0.5,
-                     stroke =1,
-                     filter_data=NULL) {
+                     nudge = 0, alpha_line = 1, alpha_ribbon = 0.5,
+                     stroke = 1,
+                     filter_data = NULL) {
   filed <- paste0(basename, "_fit_data.txt")
   df <- read.table(filed, header = FALSE, fill = TRUE)
-  if (!is.null(filter_data)){
-    last<-ncol(df)
-    df<- df[df[,last] %in% filter_data, ]
+  if (!is.null(filter_data)) {
+    last <- ncol(df)
+    df <- df[df[, last] %in% filter_data, ]
   }
 
   if (is.null(gg)) gg <- myggplot()
@@ -934,7 +938,6 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
     }
   }
   if (length(mycol) != length(Nfits)) {
-
     mycol <- paste0(labelfit, Nfits)
   }
 
@@ -955,8 +958,8 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
       # browser()
       n1 <- n + 1
       datalist[[n1]] <- read.table(file,
-                                   header = FALSE, fill = TRUE,
-                                   col.names = c(paste0("x", n), paste0("fit", n), paste0("fiterr", n))
+        header = FALSE, fill = TRUE,
+        col.names = c(paste0("x", n), paste0("fit", n), paste0("fiterr", n))
       )
       if (!noribbon) {
         gg <- gg + geom_ribbon(
@@ -979,7 +982,7 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
             fill = as.factor(mycol[n1]),
             color = as.factor(mycol[n1]),
             shape = as.factor(mycol[n1])
-          ), alpha=alpha_line
+          ), alpha = alpha_line
         )
       }
     }
@@ -1011,4 +1014,3 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
 
   return(gg)
 }
-
