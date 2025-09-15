@@ -1,0 +1,138 @@
+---
+title: "How to draw confidence level ellipse"
+format: pdf
+---
+
+Let the covariant matrix of two average estimator  $x=\frac{1}{N}\sum_i x_i$ and $y=\frac{1}{N}\sum_i y_i$
+
+$$
+M=\begin{pmatrix}
+a & b\\
+b & c
+\end{pmatrix}
+$$
+which implies that the error on $x$ is $\sqrt{a}$ and the error on $y$ is $\sqrt{c}$.
+first we need to diagonalize the matrix:
+$$
+\lambda_{1,2} =\frac{a+c}{2}\pm\sqrt{\left(\frac{a-c}{2}\right)^2+b^2}\,.
+$$
+
+In the eigenvector basis $v_1$ and $v_2$ the matrix will be diagonal 
+$$
+D=\begin{pmatrix}
+\lambda_1 & 0\\
+0 & \lambda_2
+\end{pmatrix}
+$$
+Now we want to draw an ellispe in the plane $v_1,v_2$ such that we have a probability 
+$p$ that a new measure of $v_1,v_2$ will be inside the ellipse. The for of the ellipse we want to draw is 
+$$
+\left(\frac{v_1}{\sqrt{\lambda_1}}\right)^2
++
+\left(\frac{v_2}{\sqrt{\lambda_2}}\right)^2 = s
+$${#eq-ellipse}
+where the ratio of the axis is given by the eigenvalues $\lambda_1/\lambda_2$.
+To determine the scale $s$ we need to impose that the probability that a new measure of $v_1,v_2$ will be inside the ellipse is equal to $p$. From the central limit theorem 
+we know that the probability distribution for $v_1$ and $v_2$ is (the error $\sigma=\sqrt\lambda$)
+$$
+P(v_1,v_2) = \frac{dv_1 dv_2 }{\sqrt{(2\pi)^2 \lambda_1 \lambda_2}}
+e^{-\frac{v_1^2}{2\lambda_1} -\frac{v_2^2}{2\lambda_2}}\,\,.
+$$
+Integrating the above probability distribution in the area given by the ellipse 
+(@eq-ellipse) we get the probability to measure $v_1,v_2$ inside the elipse
+$$
+\int_{ellipse}\frac{dv_1 dv_2 }{\sqrt{(2\pi)^2 \lambda_1 \lambda_2}}
+e^{-\frac{v_1^2}{2\lambda_1} -\frac{v_2^2}{2\lambda_2}}
+$$
+with a change of variable $u_1=\frac{v_1}{\sqrt{\lambda_1}}$ and $u_2=\frac{v_2}{\sqrt{\lambda_2}}$ we transform the ellipse in a circunference of 
+radius $\sqrt{s}$ with equation $u_1^2+u_2^2=(\sqrt{s})^2$
+
+$$
+\int_{circle \\  r<\sqrt{s}}\frac{du_1 du_2 }{\sqrt{(2\pi)^2 }}
+e^{-\frac{u_1^2}{2} -\frac{u_2^2}{2}}=
+\int_0^{\sqrt{s}} dr \, r e^{-\frac{r^2}{2}}=-e^{-\frac{r^2}{2}}\bigg|_0^{\sqrt{s}}=
+1-e^{-\sqrt{s}/2}\,.
+$$
+thus if we want the ellipse that inside contain the probability $p$ we have
+$$
+s=-2\log(1-p)
+$$
+
+|p|s|
+|--|--|
+|0.68|2.28|
+|0.95|5.991|
+
+thus the ellipse that contain the area with probability $p$ of  measuring $v_1,v_2$
+is given by
+$$
+\left(\frac{v_1}{\sqrt{s\lambda_1}}\right)^2
++
+\left(\frac{v_2}{\sqrt{s\lambda_2}}\right)^2 = 1
+$$
+
+
+# Numerical Test
+
+generate two independent stochastic variables 
+```{r}
+N <- 100
+p <- 0.68 # 0.3935
+s <- -2 * log(1 - p)
+# v1<-runif(N, min=-1,max=1)
+# v2<-runif(N, min=-1,max=1)
+df <- data.frame(
+  "v1" = runif(N, min = -1, max = 1),
+  "v2" = runif(N, min = -1, max = 1)
+)
+C <- cov(df) # /sqrt(N) # in the diagonal there is the error^2
+sd1 <- sd(df[, 1]) # = error * sqrt(N) = lambda^2
+sd2 <- sd(df[, 2])
+err1 <- (sqrt(sum((mean(df[, 1]) - df[, 1])^2) / ((N - 1)))) # the error as they were bootstra
+cat("cov_11 = ", C[1, 1], "  err^2=", err1 * err1, "\n")
+err2 <- (sqrt(sum((mean(df[, 2]) - df[, 2])^2) / ((N - 1)))) # the error as they were bootstra
+l1 <- (C[1, 1] + C[2, 2]) / 2 + sqrt(((C[1, 1] - C[2, 2]) / 2)^2 + C[1, 2]^2)
+l2 <- (C[1, 1] + C[2, 2]) / 2 - sqrt(((C[1, 1] - C[2, 2]) / 2)^2 + C[1, 2]^2)
+eig <- eigen(C)
+cat("eigenvalue computed with eigen()  ", eig$values[1], "\n")
+cat("eigenvalue computed by hand  ", l1, "\n")
+theta <- atan(eig$vectors[2] / eig$vectors[1])
+library(ggplot2)
+library(ggforce)
+gg <- ggplot() +
+  theme_bw()
+# gg<- gg+ geom_pointrange(aes(x=mean(df[,1]), y=mean(df[,2]),
+#                                             ymin=mean(df[,2])-sd2,
+#                                             ymax=mean(df[,2])+sd2
+#                              ))
+# gg<- gg+ geom_errorbarh(aes(x=mean(df[,1]), y=mean(df[,2]),
+#                                             xmin=mean(df[,1])-sd1,
+#                                             xmax=mean(df[,1])+sd1
+#                              ), height=0.01)
+
+
+gg <- gg + geom_ellipse(aes(
+  x0 = mean(df[, 1]), y0 = mean(df[, 2]),
+  angle = theta, a = sqrt(s * l1),
+  b = sqrt(s * l2), color = "our formula"
+))
+gg <- gg + stat_ellipse(aes(x = df[, 1], y = df[, 2], color = "buildin function"),
+  type = "norm", level = 0.68
+)
+gg
+```
+
+
+::: {.callout-important}
+The  covariance matrix here  is 
+$\sqrt{\sum_i(x_i-\bar x)(y_i-\bar y)/(N-1)}$ which is not the error for a primary quantity, to get the error we need to divide by $\sqrt{N}$.
+If $x_i$ and $y_i$ are boostrap sample instead the formala give you the error (to be 
+precise one need to multiply by $\sqrt{(N-1)/N}$). 
+If they are jackknifes to get the error one need to multiply $\sqrt{(N-1)^2/N}$
+
+|resampling|error|
+|--|--|
+|primary|$\sqrt{\frac{\sum_i(x_i-\bar x)(y_i-\bar y)}{N(N-1)}}$|
+|bootstrap|$\sqrt{\frac{\sum_i(x_i-\bar x)(y_i-\bar y)}{N}}$|
+|jackknifes|$\sqrt{\frac{(N-1)\sum_i(x_i-\bar x)(y_i-\bar y)}{N}}$|
+:::
