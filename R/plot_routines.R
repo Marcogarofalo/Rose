@@ -801,7 +801,7 @@ plot_df_corr_ggplot <- function(df, noerror = FALSE, noribbon = FALSE, gg = NULL
     gg <- myggplot()
   }
   l <- which(!stringr::str_detect(df$label, "\\$"))
-  df$label[l] <- paste0("\\verb|", df$label[l], "|")
+  # df$label[l] <- paste0("\\verb|", df$label[l], "|")
   df$label <- factor(df$label, levels = unique(df$label))
   gg <- gg + ggplot2::geom_point(
     data = df, mapping = aes(
@@ -872,6 +872,10 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
                      stroke = 1,
                      filter_data = NULL) {
   filed <- paste0(basename, "_fit_data.txt")
+  # Add this check:
+  if (!file.exists(filed)) {
+    stop(paste0("CRITICAL ERROR: The file '", filed, "' does not exist in the current directory: ", getwd()))
+  }
   df <- read.table(filed, header = FALSE, fill = TRUE)
   if (!is.null(filter_data)) {
     last <- ncol(df)

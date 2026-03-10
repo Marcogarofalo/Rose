@@ -248,5 +248,7 @@ mean_print(3.1572872, 1.99999, digit=2)
 mean_print(3.1572872, 0.99999, digit=2)
 mean_print(3.1572872, 0.99999, digit=7)
 mean_print(3.99999, 1.99999, digit=1)
+mean_print(3.99999, 1.99999, digit=2)
+mean_print(3.99999, 1.99999, digit=3)
 
 ```
