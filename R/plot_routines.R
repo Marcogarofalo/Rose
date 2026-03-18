@@ -16,9 +16,6 @@ set_xmargin <- function(fit_range, T) {
 }
 
 
-
-
-
 ################################################################################
 ################################################################################
 #' plot a plateaux
@@ -275,7 +272,6 @@ scale_fit_ggplot <- function(d, fit_range, Th, logscale = "no", g, extrax = c(2,
 }
 
 
-
 #####################################################################
 #####################################################################
 #' adjust and print the plot to the output format, it return a ggplot if pdf output
@@ -382,6 +378,15 @@ myplotly <- function(gg, title = "", xlabel = "", ylabel = "",
     if (to_webgl) fig <- fig %>% toWebGL()
 
     if (to_print) {
+      fig <- fig %>% layout(
+        margin = list(
+          l = 50, # left margin
+          r = 50, # right margin
+          t = 80, # top margin
+          b = 80, # bottom margin
+          pad = 10 # padding between plot area and axis lines
+        )
+      )
       fig <- widgetframe::frameableWidget(fig %>% config(
         mathjax = "cdn",
         displayModeBar = FALSE
@@ -389,7 +394,9 @@ myplotly <- function(gg, title = "", xlabel = "", ylabel = "",
       # print(widgetframe::frameableWidget(fig))
       # widgetframe::frameableWidget(fig)
       # htmltools::frameWidget(fig)
-      print(htmltools::tagList(fig, "<\br >"))
+      # add new line in html
+      print(htmltools::tagList(fig))
+      # print(htmltools::tagList(fig, "<\br >"))
     }
   } else if (PDF) {
     # if(!is.null(save_pdf) ) pdf(save_pdf)
@@ -465,11 +472,6 @@ set_xmargin <- function(fit_range, T) {
   }
   c(xmin, xmax)
 }
-
-
-
-
-
 
 
 #####################################################################
@@ -636,7 +638,6 @@ many_fit_ggplot <- function(d, fit_par, fit_range, T, logscale = "no", g, mylabe
 }
 
 
-
 #####################################################################
 #####################################################################
 #' print result of a fit
@@ -691,7 +692,6 @@ plot_corr <- function(string, all_obs, mt, L, T, gg, log = "no", number = NULL,
 
   return(gg)
 }
-
 
 
 #####################################################################
@@ -961,6 +961,12 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
       file <- sprintf("%s_fit_out_n%d_%s.txt", basename, n, var)
       # browser()
       n1 <- n + 1
+      if (!file.exists(file)) {
+        stop(paste0(
+          "CRITICAL ERROR: The file '", filed,
+          "' does not exist in the current directory: ", getwd()
+        ))
+      }
       datalist[[n1]] <- read.table(file,
         header = FALSE, fill = TRUE,
         col.names = c(paste0("x", n), paste0("fit", n), paste0("fiterr", n))
