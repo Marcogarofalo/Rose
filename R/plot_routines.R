@@ -30,7 +30,7 @@ myggplot <- function(color = TRUE, shape = TRUE, fill = TRUE, repeat_color = 1) 
     "#228B22", "#8B008B", "#00CCFF",
     "#996600", "#999999", "#FFCC33",
     "#FF6600", "#6633FF", "#9966FF",
-    "#006666", "#FFCCFF", "#fc0303",
+    "#006666", "#FFCCFF", "#FC0303",
     "#03fc07", "#0335fc", "#fc03e3",
     "#d7fc03"
   )
@@ -48,6 +48,102 @@ myggplot <- function(color = TRUE, shape = TRUE, fill = TRUE, repeat_color = 1) 
   }
   return(gg)
 }
+
+#####################################################################
+#####################################################################
+my_ggplot_theme <- function(color = TRUE,
+                            shape = TRUE,
+                            fill = TRUE,
+                            repeat_factor = 1,
+                            base_size = 11,
+                            legend_position = "right",
+                            mode = c("classic", "classic_dark", "publication", "pastel", "colorblind"),
+                            custom_palette = NULL) { # Renamed from 'palette'
+
+  if (!is.logical(color) || length(color) != 1) stop("`color` must be a single TRUE or FALSE value.")
+  if (!is.logical(shape) || length(shape) != 1) stop("`shape` must be a single TRUE or FALSE value.")
+  if (!is.logical(fill) || length(fill) != 1) stop("`fill` must be a single TRUE or FALSE value.")
+
+  if (!is.numeric(repeat_factor) || repeat_factor < 1 || repeat_factor %% 1 != 0) {
+    stop("`repeat_factor` must be a single positive integer (1, 2, 3...).")
+  }
+
+  if (!is.numeric(base_size) || base_size <= 0) {
+    stop("`base_size` must be a positive number.")
+  }
+
+  valid_legends <- c("none", "left", "right", "top", "bottom")
+  if (!legend_position %in% valid_legends && !is.numeric(legend_position)) {
+    stop('`legend_position` must be one of: "none", "left", "right", "top", "bottom", or a numeric vector.')
+  }
+
+  mode <- match.arg(mode)
+
+  # Assign chosen hex codes to a uniquely named local variable
+  chosen_colors <- if (is.null(custom_palette)) {
+    switch(mode,
+           "classic" = c(
+             "#404040", "#4863A0", "#C04000", "#228B22", "#8B008B",
+             "#00CCFF", "#996600", "#999999", "#FFCC33", "#FF6600",
+             "#6633FF", "#9966FF", "#006666", "#FFCCFF", "#FC0303",
+             "#03FC07", "#0335FC", "#FC03E3", "#D7FC03"
+           ),
+           "classic_dark" = c(
+             "#FFFFFF", "#5C7AEA", "#FF6B6B", "#4E9F3D", "#D8B4F8",
+             "#00ADB5", "#FFD369", "#EEEEEE", "#A3A3A3", "#FF8000"
+           ),
+           "publication" = c(
+             "#386CB0", "#F0027F", "#BF5B17", "#7FC97F",
+             "#EF3B2C", "#662506", "#A6CEE3", "#FB9A99", "#984EA3",
+             "#FFFF99", "#B15928", "#6A3D9A" # Added extra publication colors (now 12 total)
+           ),
+           "pastel" = c(
+             "#A8DADC", "#F1FAEE", "#E63946", "#457B9D", "#1D3557",
+             "#FFCAD4", "#B5E2FA", "#F7AEF8", "#E0B1CB", "#BE95C4",
+             "#FFF0F5", "#FFE4E1" # Added extra pastel colors
+           ),
+           "colorblind" = c(
+             "#000000", "#E69F00", "#56B4E9", "#009E73",
+             "#F0E442", "#0072B2", "#D55E00", "#CC79A7",
+             "#5A5A5A", "#999999" # Note: Colorblind safe up to ~8-12 distinct hues max
+           )
+    )
+  } else if (is.character(custom_palette)) {
+    custom_palette
+  } else {
+    stop("`custom_palette` must be a character vector of colors or hex codes.")
+  }
+
+  shape_list <- c(0, 1, 2, 4, 5, 6, 7, 8, 11, 15, 16, 17, 18, 21, 22, 23, 24, 25)
+
+  color_vals <- rep(chosen_colors, each = repeat_factor)
+  shape_vals <- rep(shape_list, each = repeat_factor)
+
+  base_theme <- if (mode == "classic_dark") {
+    ggplot2::theme_dark(base_size = base_size)
+  } else {
+    ggplot2::theme_bw(base_size = base_size)
+  }
+
+  modifiers <- list(
+    base_theme,
+    ggplot2::theme(legend.position = legend_position)
+  )
+
+  if (color) {
+    modifiers <- c(modifiers, list(ggplot2::scale_color_manual(values = color_vals)))
+  }
+  if (fill) {
+    modifiers <- c(modifiers, list(ggplot2::scale_fill_manual(values = color_vals)))
+  }
+  if (shape) {
+    modifiers <- c(modifiers, list(ggplot2::scale_shape_manual(values = shape_vals)))
+  }
+
+  return(modifiers)
+}
+
+
 
 #####################################################################
 #####################################################################
@@ -401,21 +497,24 @@ myplotly <- function(gg, title = "", xlabel = "", ylabel = "",
   } else if (PDF) {
     # if(!is.null(save_pdf) ) pdf(save_pdf)
     # knitr::opts_chunk$set(  dev='tikz')
-    if (stringr::str_detect(xlabel, "\\$")) {
-      labelx <- xlabel
-    } else {
-      labelx <- paste0("\\verb|", xlabel, "|")
-    }
-    if (stringr::str_detect(ylabel, "\\$")) {
-      labely <- ylabel
-    } else {
-      labely <- paste0("\\verb|", ylabel, "|")
-    }
-    if (stringr::str_detect(title, "\\$")) {
-      mytitle <- title
-    } else {
-      mytitle <- paste0("\\verb|", title, "|")
-    }
+    # if (stringr::str_detect(xlabel, "\\$")) {
+    #   labelx <- xlabel
+    # } else {
+    #   labelx <- paste0("\\verb|", xlabel, "|")
+    # }
+    labelx <- xlabel
+    # if (stringr::str_detect(ylabel, "\\$")) {
+    #   labely <- ylabel
+    # } else {
+    #   labely <- paste0("\\verb|", ylabel, "|")
+    # }
+    labely <- ylabel
+    # if (stringr::str_detect(title, "\\$")) {
+    #   mytitle <- title
+    # } else {
+    #   mytitle <- paste0("\\verb|", title, "|")
+    # }
+    mytitle <- title
 
     fig <- gg
     if (!is.null(xrange) && !is.null(yrange)) {
@@ -434,16 +533,31 @@ myplotly <- function(gg, title = "", xlabel = "", ylabel = "",
 
     if (to_print) plot(fig)
     if (!is.null(save_pdf)) {
-      texfile <- paste0(save_pdf, ".tex")
-      tikzDevice::tikz(texfile,
+      # texfile <- paste0(save_pdf, ".tex")
+      # tikzDevice::tikz(texfile,
+      #   standAlone = TRUE,
+      #   width = width / 100,
+      #   height = height / 100
+      # )
+      # plot(fig)
+      # dev.off()
+      # tools::texi2dvi(paste0(save_pdf, ".tex"),
+      #   texi2dvi = latex_engine, pdf = TRUE,
+      #   clean = clean_pdf
+      # )
+      ggplot2::ggsave(
+        filename = paste0(save_pdf, ".tex"),
+        plot = fig,
+        device = tikzDevice::tikz,
         standAlone = TRUE,
         width = width / 100,
-        height = height / 100
+        height = height / 100,
+        units = "in"
       )
-      plot(fig)
-      dev.off()
-      tools::texi2dvi(paste0(save_pdf, ".tex"),
-        texi2dvi = latex_engine, pdf = TRUE,
+
+      # 2. Compile the .tex file directly into a PDF
+      tinytex::pdflatex(
+        file = paste0(save_pdf, ".tex"),
         clean = clean_pdf
       )
     }

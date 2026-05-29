@@ -113,7 +113,7 @@ fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y", to_print=TRUE,
                yrange = c(0,1), output = "HTML", to_webgl=TRUE)
 fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y", to_print=TRUE, 
                yrange = c(0,1), output = "PDF")
-fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y", to_print=TRUE, xrange = c(8.8,11),
+fig<- myplotly(gg,paste0("meff L",L,"T",T),"t", "y_t", to_print=TRUE, xrange = c(8.8,11),
                yrange = c(0,1), output = "PDF")
 
 end_time <- Sys.time()    
@@ -127,6 +127,10 @@ source("../R/plot_routines.R")
 gg<-myggplot()
 gg<- gg+ geom_point(aes(x=c(1:10),y=c(1:10), color=as.factor(c(1:10)) ), size=4)
 gg
+gg<- ggplot()+ geom_point(aes(x=c(1:10),y=c(1:10), color=as.factor(c(1:10)) ), size=4)+
+  my_ggplot_theme(mode="colorblind")
+gg
+
 ```
 
 
