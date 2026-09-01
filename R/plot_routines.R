@@ -1,3 +1,49 @@
+#' Symmetric Error Bar and Point Layer
+#'
+#' A shortcut geom that plots both a center point and symmetrical error bars
+#' without needing to specify ymin and ymax manually.
+#'
+#' @param mapping Set of aesthetic mappings created by [ggplot2::aes()].
+#' @param error_var The unquoted column name containing the error values.
+#' @param width Width of the error bar caps. Default is 0.2.
+#' @param ... Other arguments passed on to both [ggplot2::geom_errorbar()] and [ggplot2::geom_point()].
+#'
+#' @return A list containing a geom_errorbar layer and a geom_point layer.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' df <- data.frame(x = 1:3, y = c(10, 15, 12), err = c(1.2, 0.8, 1.5))
+#' ggplot(df) + geom_symmetric_error(aes(x = x, y = y), error_var = err)
+#' }
+geom_symmetric_error <- function(mapping = NULL, error_var, width = 0.2, ...) {
+  # Fix "no visible binding for global variable" warning in R CMD check
+  y <- NULL
+
+  # 1. Capture the structural ymin/ymax math using data-masking {{ }}
+  error_map <- ggplot2::aes(
+    ymin = ggplot2::after_stat(y) - {{error_var}},
+    ymax = ggplot2::after_stat(y) + {{error_var}}
+  )
+
+  # 2. Combine mappings using base list modification
+  if (is.null(mapping)) {
+    final_map <- error_map
+  } else {
+    final_map <- utils::modifyList(mapping, error_map)
+    # CRITICAL: Ensure ggplot2 recognizes it as an aesthetic mapping bundle
+    class(final_map) <- "uneval"
+  }
+
+  # 3. Return both layers as a list with package namespaces intact
+  list(
+    ggplot2::geom_errorbar(mapping = final_map, width = width, ...),
+    ggplot2::geom_point(mapping = mapping, ...)
+  )
+}
+
+
+
 #' set margin for a fit
 #'
 #' @param fit_range list of two number tmin and tmax
@@ -57,7 +103,7 @@ my_ggplot_theme <- function(color = TRUE,
                             repeat_factor = 1,
                             base_size = 11,
                             legend_position = "right",
-                            mode = c("classic", "classic_dark", "publication", "pastel", "colorblind"),
+                            mode = c("distinct","classic", "classic_dark", "publication", "pastel", "colorblind"),
                             custom_palette = NULL) { # Renamed from 'palette'
 
   if (!is.logical(color) || length(color) != 1) stop("`color` must be a single TRUE or FALSE value.")
@@ -82,6 +128,12 @@ my_ggplot_theme <- function(color = TRUE,
   # Assign chosen hex codes to a uniquely named local variable
   chosen_colors <- if (is.null(custom_palette)) {
     switch(mode,
+           "distinct"=c('#e6194B', '#3cb44b', '#ffe119', '#4363d8',
+                '#f58231', '#911eb4', '#42d4f4', '#f032e6',
+                '#bfef45', '#fabed4', '#469990', '#dcbeff',
+                '#9A6324', '#fffac8', '#800000', '#aaffc3',
+                '#808000', '#ffd8b1', '#000075', '#a9a9a9',
+                '#000000'),
            "classic" = c(
              "#404040", "#4863A0", "#C04000", "#228B22", "#8B008B",
              "#00CCFF", "#996600", "#999999", "#FFCC33", "#FF6600",
@@ -988,7 +1040,7 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
   filed <- paste0(basename, "_fit_data.txt")
   # Add this check:
   if (!file.exists(filed)) {
-    stop(paste0("CRITICAL ERROR: The file '", filed, "' does not exist in the current directory: ", getwd()))
+    stop(paste0("CRITICAL ERROR: The file \n'", filed, "'\n does not exist in the current directory: ", getwd()))
   }
   df <- read.table(filed, header = FALSE, fill = TRUE)
   if (!is.null(filter_data)) {
@@ -1077,7 +1129,7 @@ plot_fit <- function(basename, var, data_type = NULL, gg = NULL, noribbon = FALS
       n1 <- n + 1
       if (!file.exists(file)) {
         stop(paste0(
-          "CRITICAL ERROR: The file '", filed,
+          "CRITICAL ERROR: The file '", file,
           "' does not exist in the current directory: ", getwd()
         ))
       }
